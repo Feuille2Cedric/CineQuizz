@@ -709,7 +709,9 @@ button {
 
 #answer-form .answer-input-block.is-hidden,
 #answer-form .answer-input-block[hidden],
-#answer-form #answer-input.is-hidden {
+#answer-form #answer-input.is-hidden,
+#answer-form[data-answer-mode="mcq"] .answer-input-block,
+#answer-form[data-answer-mode="mcq"] #answer-input {
   display: none !important;
 }
 

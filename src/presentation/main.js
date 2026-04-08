@@ -279,11 +279,14 @@ function renderAnswerChoices(viewModel) {
   const isMcq = viewModel.answerMode === "mcq";
   const selectedChoice = dom.answerForm.dataset.selectedChoice ?? "";
 
+  dom.answerForm.dataset.answerMode = isMcq ? "mcq" : "text";
   dom.answerChoiceGroup.classList.toggle("is-hidden", !isMcq);
   dom.answerInputBlock.classList.toggle("is-hidden", isMcq);
   dom.answerInputBlock.hidden = isMcq;
+  dom.answerInputBlock.style.display = isMcq ? "none" : "";
   dom.answerInputLabel.setAttribute("aria-hidden", String(isMcq));
   dom.answerInput.classList.toggle("is-hidden", isMcq);
+  dom.answerInput.style.display = isMcq ? "none" : "";
 
   if (!isMcq) {
     dom.answerChoiceGroup.innerHTML = "";
