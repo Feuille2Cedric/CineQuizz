@@ -526,7 +526,20 @@ button {
   margin: 0;
 }
 
+.difficulty-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 14px 0 0;
+}
+
 .stats-grid div {
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 250, 243, 0.84);
+}
+
+.difficulty-stats-grid div {
   padding: 12px;
   border-radius: var(--radius-md);
   background: rgba(255, 250, 243, 0.84);
@@ -538,9 +551,21 @@ button {
   font-size: 0.9rem;
 }
 
+.difficulty-stats-grid dt {
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 .stats-grid dd {
   margin: 0;
   font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.difficulty-stats-grid dd {
+  margin: 0;
+  font-size: 1.15rem;
   font-weight: 700;
 }
 
@@ -762,6 +787,10 @@ button {
   }
 
   .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .difficulty-stats-grid {
     grid-template-columns: 1fr;
   }
 }

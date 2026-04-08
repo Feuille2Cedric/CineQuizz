@@ -79,6 +79,9 @@ const dom = {
   statAnswered: document.getElementById("stat-answered"),
   statAccuracy: document.getElementById("stat-accuracy"),
   statRemaining: document.getElementById("stat-remaining"),
+  statEasyRatio: document.getElementById("stat-easy-ratio"),
+  statMediumRatio: document.getElementById("stat-medium-ratio"),
+  statHardRatio: document.getElementById("stat-hard-ratio"),
   catalogEasy: document.getElementById("catalog-easy"),
   catalogMedium: document.getElementById("catalog-medium"),
   catalogHard: document.getElementById("catalog-hard"),
@@ -327,6 +330,9 @@ function render(viewModel) {
   dom.statAnswered.textContent = viewModel.stats.totalAnswered;
   dom.statAccuracy.textContent = `${viewModel.stats.accuracy}%`;
   dom.statRemaining.textContent = viewModel.stats.remaining;
+  dom.statEasyRatio.textContent = `${viewModel.stats.byDifficulty.easy.correct} / ${viewModel.stats.byDifficulty.easy.answered}`;
+  dom.statMediumRatio.textContent = `${viewModel.stats.byDifficulty.medium.correct} / ${viewModel.stats.byDifficulty.medium.answered}`;
+  dom.statHardRatio.textContent = `${viewModel.stats.byDifficulty.hard.correct} / ${viewModel.stats.byDifficulty.hard.answered}`;
 
   dom.catalogEasy.textContent = viewModel.catalogCounts.easy;
   dom.catalogMedium.textContent = viewModel.catalogCounts.medium;

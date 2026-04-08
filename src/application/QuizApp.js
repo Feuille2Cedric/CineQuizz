@@ -9,6 +9,14 @@ function accuracyFromStats(stats) {
   return Math.round((stats.totalCorrect / stats.totalAnswered) * 100);
 }
 
+function emptyDifficultyStats() {
+  return {
+    easy: { correct: 0, answered: 0 },
+    medium: { correct: 0, answered: 0 },
+    hard: { correct: 0, answered: 0 }
+  };
+}
+
 function toDifficultyLabel(difficulty) {
   return {
     easy: "Facile",
@@ -40,7 +48,8 @@ export class QuizApp {
         isAdmin: false,
         stats: {
           totalAnswered: 0,
-          totalCorrect: 0
+          totalCorrect: 0,
+          byDifficulty: emptyDifficultyStats()
         }
       },
       auth: {

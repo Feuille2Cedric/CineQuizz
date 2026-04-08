@@ -19,10 +19,37 @@ function buildLocalUserId() {
   return `browser-${Math.random().toString(36).slice(2, 12)}`;
 }
 
+function emptyDifficultyStats() {
+  return {
+    easy: { correct: 0, answered: 0 },
+    medium: { correct: 0, answered: 0 },
+    hard: { correct: 0, answered: 0 }
+  };
+}
+
+function buildDifficultyStats(progress) {
+  const stats = emptyDifficultyStats();
+
+  for (const attempt of Object.values(progress ?? {})) {
+    if (!attempt?.difficulty || !stats[attempt.difficulty]) {
+      continue;
+    }
+
+    stats[attempt.difficulty].answered += 1;
+
+    if (attempt.isCorrect) {
+      stats[attempt.difficulty].correct += 1;
+    }
+  }
+
+  return stats;
+}
+
 function toStats(profile) {
   return {
     totalAnswered: profile.totalAnswered ?? 0,
-    totalCorrect: profile.totalCorrect ?? 0
+    totalCorrect: profile.totalCorrect ?? 0,
+    byDifficulty: buildDifficultyStats(profile.progress ?? {})
   };
 }
 
@@ -46,6 +73,7 @@ export class BrowserGameRepository {
     }
 
     this.progress = readJson(PROGRESS_KEY, {});
+    this.profile.progress = this.progress;
     this.#persistProfile();
     this.#syncLeaderboard();
 
@@ -161,6 +189,7 @@ export class BrowserGameRepository {
   }
 
   #persistProfile() {
+    this.profile.progress = this.progress;
     writeJson(PROFILE_KEY, this.profile);
   }
 

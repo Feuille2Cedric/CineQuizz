@@ -1,7 +1,12 @@
 function toStats(profile) {
   return {
     totalAnswered: profile?.total_answered ?? 0,
-    totalCorrect: profile?.total_correct ?? 0
+    totalCorrect: profile?.total_correct ?? 0,
+    byDifficulty: profile?.byDifficulty ?? {
+      easy: { correct: 0, answered: 0 },
+      medium: { correct: 0, answered: 0 },
+      hard: { correct: 0, answered: 0 }
+    }
   };
 }
 
@@ -64,7 +69,8 @@ export class SupabaseGameRepository {
     this.profile = {
       ...this.profile,
       total_answered: result?.total_answered ?? this.profile.total_answered,
-      total_correct: result?.total_correct ?? this.profile.total_correct
+      total_correct: result?.total_correct ?? this.profile.total_correct,
+      byDifficulty: await this.#loadDifficultyStats()
     };
 
     return {
@@ -303,7 +309,8 @@ export class SupabaseGameRepository {
     this.profile = {
       ...this.profile,
       total_answered: result?.total_answered ?? this.profile.total_answered,
-      total_correct: result?.total_correct ?? this.profile.total_correct
+      total_correct: result?.total_correct ?? this.profile.total_correct,
+      byDifficulty: await this.#loadDifficultyStats()
     };
 
     return {
@@ -489,7 +496,10 @@ export class SupabaseGameRepository {
       throw new Error(`Chargement du profil impossible: ${error.message}`);
     }
 
-    return data;
+    return {
+      ...data,
+      byDifficulty: await this.#loadDifficultyStats()
+    };
   }
 
   async #loadAnsweredQuestionIds() {
@@ -503,6 +513,41 @@ export class SupabaseGameRepository {
     }
 
     return (data ?? []).map((entry) => entry.question_id);
+  }
+
+  async #loadDifficultyStats() {
+    const stats = {
+      easy: { correct: 0, answered: 0 },
+      medium: { correct: 0, answered: 0 },
+      hard: { correct: 0, answered: 0 }
+    };
+
+    if (!this.userId) {
+      return stats;
+    }
+
+    const { data, error } = await this.client
+      .from("user_question_progress")
+      .select("difficulty,is_correct")
+      .eq("user_id", this.userId);
+
+    if (error) {
+      throw new Error(`Chargement des stats par difficulte impossible: ${error.message}`);
+    }
+
+    for (const attempt of data ?? []) {
+      if (!attempt?.difficulty || !stats[attempt.difficulty]) {
+        continue;
+      }
+
+      stats[attempt.difficulty].answered += 1;
+
+      if (attempt.is_correct) {
+        stats[attempt.difficulty].correct += 1;
+      }
+    }
+
+    return stats;
   }
 
   async #ensureProfile(preferredNickname, user) {
