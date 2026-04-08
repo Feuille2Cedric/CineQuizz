@@ -158,9 +158,14 @@ Puis ouvrez `http://localhost:8000`.
 ## Deploiement GitHub Pages
 
 1. Poussez le depot sur GitHub.
-2. Dans `Settings > Pages`, choisissez le deploiement depuis la branche principale.
-3. Servez la racine du depot.
-4. Si Supabase est actif, committez votre `config.js` avec l'URL du projet et la cle anon.
+2. Ajoutez deux secrets GitHub dans `Settings > Secrets and variables > Actions`:
+   - `CINEQUIZZ_SUPABASE_URL`
+   - `CINEQUIZZ_SUPABASE_ANON_KEY`
+3. Dans `Settings > Pages`, choisissez `GitHub Actions` comme source de deploiement.
+4. Le workflow [`deploy.yml`](/c:/Users/crima/.vscode/CineQuizz/.github/workflows/deploy.yml) genere `config.js` au build a partir de ces secrets.
+5. Le `config.js` du depot reste vide par defaut. Pour lancer le projet en local, remplissez-le manuellement sans le republier tel quel.
+
+Important: la cle `anon` Supabase n'est pas secrete cote navigateur. Cette approche evite de la versionner dans le depot, mais elle restera visible dans le JavaScript servi aux utilisateurs.
 
 ## Fichiers importants
 
