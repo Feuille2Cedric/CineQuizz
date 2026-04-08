@@ -294,6 +294,14 @@ button {
 }
 
 .answer-form textarea {
+  display: block;
+  min-height: 84px;
+  padding: 14px 16px;
+  line-height: 1.45;
+  resize: vertical;
+  vertical-align: top;
+  overflow-y: auto;
+  appearance: none;
   transition:
     border-color 180ms ease,
     background 180ms ease,
