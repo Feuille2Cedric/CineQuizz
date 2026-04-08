@@ -298,6 +298,8 @@ button {
   min-height: 84px;
   padding: 14px 16px;
   line-height: 1.45;
+  color: var(--text);
+  caret-color: var(--text);
   resize: vertical;
   vertical-align: top;
   overflow-y: auto;
@@ -311,12 +313,16 @@ button {
 .answer-form textarea.is-correct {
   border-color: rgba(24, 121, 78, 0.42);
   background: rgba(24, 121, 78, 0.1);
+  color: var(--text);
+  caret-color: var(--text);
   box-shadow: inset 0 0 0 1px rgba(24, 121, 78, 0.14);
 }
 
 .answer-form textarea.is-wrong {
   border-color: rgba(148, 37, 37, 0.4);
   background: rgba(148, 37, 37, 0.08);
+  color: var(--text);
+  caret-color: var(--text);
   box-shadow: inset 0 0 0 1px rgba(148, 37, 37, 0.12);
 }
 
