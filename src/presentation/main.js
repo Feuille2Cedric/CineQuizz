@@ -495,7 +495,7 @@ function render(viewModel) {
   const canContribute = Boolean(viewModel.canContribute);
   const shouldShowEntry = isSupabase && (!uiState.entryDismissed || requiresAuth);
   const activeQuestionId = viewModel.currentQuestion?.id ?? null;
-  const canEditQuestion = Boolean(activeQuestionId) && !requiresAuth;
+  const canEditQuestion = Boolean(activeQuestionId) && viewModel.profile.isAdmin;
   const canAdministerQuestion = Boolean(activeQuestionId) && viewModel.profile.isAdmin;
 
   if (uiState.editQuestionId !== activeQuestionId) {
