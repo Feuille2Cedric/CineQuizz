@@ -472,6 +472,16 @@ function setContributionFieldVisibility(element, shouldShow, displayValue = "gri
   element.style.display = shouldShow ? displayValue : "none";
 }
 
+function clearFieldError(field) {
+  field.setCustomValidity("");
+}
+
+function showFieldError(field, message) {
+  field.setCustomValidity(message);
+  field.reportValidity();
+  field.focus();
+}
+
 function syncContributionMode() {
   const wantsEdit = dom.questionFeedbackType.value === "edit";
   const isMcq = questionUsesMultipleChoice(uiState.viewModel?.currentQuestion);
@@ -933,7 +943,7 @@ async function main() {
       const nickname = dom.nicknameInput.value.trim();
 
       if (!nickname || nickname.length < 3) {
-        dom.dataMessage.textContent = "Le pseudo doit faire au moins 3 caracteres.";
+        showFieldError(dom.nicknameInput, "Le pseudo doit faire au moins 3 caracteres.");
         return;
       }
 
@@ -1050,7 +1060,25 @@ async function main() {
   });
 
   dom.questionFeedbackReason.addEventListener("input", () => {
-    dom.questionFeedbackReason.setCustomValidity("");
+    clearFieldError(dom.questionFeedbackReason);
+  });
+
+  [
+    dom.feedbackPrompt,
+    dom.feedbackAnswer,
+    dom.feedbackAliases,
+    dom.feedbackDistractors,
+    dom.newQuestionPrompt,
+    dom.newQuestionAnswer,
+    dom.newQuestionAliases,
+    dom.newQuestionDistractors,
+    dom.newQuestionReason,
+    dom.editPrompt,
+    dom.editAnswer,
+    dom.editAliases,
+    dom.nicknameInput
+  ].forEach((field) => {
+    field?.addEventListener("input", () => clearFieldError(field));
   });
 
   dom.newQuestionType.addEventListener("change", () => {
@@ -1070,13 +1098,34 @@ async function main() {
       const trimmedReason = dom.questionFeedbackReason.value.trim();
 
       if (!trimmedReason) {
-        dom.questionFeedbackReason.setCustomValidity("Il faut remplir l'explication.");
-        dom.questionFeedbackReason.reportValidity();
-        dom.questionFeedbackReason.focus();
+        showFieldError(dom.questionFeedbackReason, "Il faut remplir l'explication.");
         return;
       }
 
       const requestType = dom.questionFeedbackType.value;
+
+      if (requestType === "edit" && !dom.feedbackPrompt.value.trim()) {
+        showFieldError(dom.feedbackPrompt, "Il faut remplir la question.");
+        return;
+      }
+
+      if (requestType === "edit" && !dom.feedbackAnswer.value.trim() && uiState.viewModel?.canRevealCurrentAnswer) {
+        showFieldError(dom.feedbackAnswer, "Il faut remplir la bonne reponse.");
+        return;
+      }
+
+      if (
+        requestType === "edit" &&
+        questionUsesMultipleChoice(uiState.viewModel?.currentQuestion) &&
+        dom.feedbackDistractors.value
+          .split(/\r?\n/)
+          .map((value) => value.trim())
+          .filter(Boolean).length === 1
+      ) {
+        showFieldError(dom.feedbackDistractors, "Ajoutez au moins 2 fausses reponses.");
+        return;
+      }
+
       const result = await app.submitQuestionFeedback({
         type: requestType,
         questionId: currentQuestionId,
@@ -1109,6 +1158,32 @@ async function main() {
     event.preventDefault();
 
     try {
+      if (!dom.newQuestionPrompt.value.trim()) {
+        showFieldError(dom.newQuestionPrompt, "Il faut remplir la question.");
+        return;
+      }
+
+      if (!dom.newQuestionAnswer.value.trim()) {
+        showFieldError(dom.newQuestionAnswer, "Il faut remplir la bonne reponse.");
+        return;
+      }
+
+      if (!dom.newQuestionReason.value.trim()) {
+        showFieldError(dom.newQuestionReason, "Il faut remplir l'explication.");
+        return;
+      }
+
+      if (
+        dom.newQuestionType.value === "mcq" &&
+        dom.newQuestionDistractors.value
+          .split(/\r?\n/)
+          .map((value) => value.trim())
+          .filter(Boolean).length < 2
+      ) {
+        showFieldError(dom.newQuestionDistractors, "Ajoutez au moins 2 fausses reponses.");
+        return;
+      }
+
       const result = await app.submitNewQuestionSuggestion({
         prompt: dom.newQuestionPrompt.value,
         questionType: dom.newQuestionType.value,
@@ -1158,6 +1233,16 @@ async function main() {
   dom.editForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     try {
+      if (!dom.editPrompt.value.trim()) {
+        showFieldError(dom.editPrompt, "Il faut remplir la question.");
+        return;
+      }
+
+      if (!dom.editAnswer.value.trim()) {
+        showFieldError(dom.editAnswer, "Il faut remplir la bonne reponse.");
+        return;
+      }
+
       const questionId = dom.editForm.dataset.questionId;
       uiState.editPanelOpen = false;
 
