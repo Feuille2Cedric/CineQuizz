@@ -40,6 +40,17 @@ function shouldUseMultipleChoice(question) {
     return false;
   }
 
+  const manualChoices = question.metadata?.mcqChoices ?? question.metadata?.mcq_choices;
+  const manualDistractors = question.metadata?.distractors;
+
+  if (Array.isArray(manualChoices) && manualChoices.length >= 2) {
+    return true;
+  }
+
+  if (Array.isArray(manualDistractors) && manualDistractors.length >= 1) {
+    return true;
+  }
+
   if (question.metadata?.answerMode === "text") {
     return false;
   }
@@ -127,6 +138,10 @@ function choiceScore(question, candidate) {
   score += Math.max(0, 12 - Math.abs(answerWordCount(candidate.answer) - answerWordCount(question.answer)) * 2);
 
   return score;
+}
+
+function normalizeChoiceList(values) {
+  return [...new Set((values ?? []).map((value) => String(value ?? "").trim()).filter(Boolean))];
 }
 
 export class QuizApp {
@@ -521,6 +536,19 @@ export class QuizApp {
   #buildAnswerChoices(question) {
     if (!shouldUseMultipleChoice(question)) {
       return [];
+    }
+
+    const manualChoices = normalizeChoiceList(
+      question.metadata?.mcqChoices ?? question.metadata?.mcq_choices ?? []
+    );
+    const manualDistractors = normalizeChoiceList(question.metadata?.distractors ?? []);
+
+    if (manualChoices.length) {
+      return shuffle(normalizeChoiceList([question.answer, ...manualChoices]));
+    }
+
+    if (manualDistractors.length) {
+      return shuffle(normalizeChoiceList([question.answer, ...manualDistractors]));
     }
 
     const seen = new Set([normalizeChoiceKey(question.answer)]);
