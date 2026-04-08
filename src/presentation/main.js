@@ -10,10 +10,13 @@ import {
 import { SupabaseGameRepository } from "../infrastructure/supabase/SupabaseGameRepository.js";
 
 const dom = {
+  pageShell: document.getElementById("page-shell"),
+  authGate: document.getElementById("auth-gate"),
   storageMode: document.getElementById("storage-mode"),
   syncStatus: document.getElementById("sync-status"),
   authPanel: document.getElementById("auth-panel"),
   authForm: document.getElementById("auth-form"),
+  authNicknameInput: document.getElementById("auth-nickname-input"),
   authEmailInput: document.getElementById("auth-email-input"),
   authPasswordInput: document.getElementById("auth-password-input"),
   authSession: document.getElementById("auth-session"),
@@ -156,14 +159,19 @@ function render(viewModel) {
       : "Questions, progression et classement charges depuis Supabase."
     : "Progression stockee dans ce navigateur. Configurez config.js pour activer Supabase.";
 
-  dom.authPanel.classList.toggle("is-hidden", !isSupabase);
-  dom.authForm.classList.toggle("is-hidden", !isSupabase || viewModel.auth.isAuthenticated);
+  dom.pageShell.classList.toggle("app-locked", requiresAuth);
+  dom.authGate.classList.toggle("is-hidden", !requiresAuth);
+  dom.authForm.classList.toggle("is-hidden", !requiresAuth);
   dom.authSession.classList.toggle("is-hidden", !isSupabase || !viewModel.auth.isAuthenticated);
   dom.authEmailValue.textContent = viewModel.auth.email ?? "";
 
   dom.nicknameInput.value = viewModel.profile.nickname ?? "";
   dom.nicknameInput.disabled = requiresAuth;
   dom.nicknameSubmitButton.disabled = requiresAuth;
+
+  if (!dom.authNicknameInput.value && viewModel.profile.nickname && viewModel.profile.nickname !== "Spectateur") {
+    dom.authNicknameInput.value = viewModel.profile.nickname;
+  }
 
   dom.statCorrect.textContent = viewModel.stats.totalCorrect;
   dom.statAnswered.textContent = viewModel.stats.totalAnswered;
@@ -342,7 +350,7 @@ async function main() {
       const action = event.submitter?.dataset.authAction;
       const email = dom.authEmailInput.value.trim();
       const password = dom.authPasswordInput.value;
-      const preferredNickname = dom.nicknameInput.value.trim();
+      const preferredNickname = dom.authNicknameInput.value.trim() || dom.nicknameInput.value.trim();
 
       if (!email) {
         dom.authStatus.textContent = "L'e-mail est requis.";
@@ -361,8 +369,13 @@ async function main() {
 
       render(result.viewModel);
       dom.authPasswordInput.value = "";
+      dom.nicknameInput.value = result.viewModel.profile.nickname ?? "";
       dom.authStatus.textContent = result.message;
       dom.dataMessage.textContent = result.message;
+
+      if (!dom.answerInput.disabled) {
+        dom.answerInput.focus();
+      }
     } catch (error) {
       reportAuthError(error);
     }
@@ -372,8 +385,10 @@ async function main() {
     try {
       render(await app.signOut());
       dom.authPasswordInput.value = "";
+      dom.authNicknameInput.value = dom.nicknameInput.value.trim();
       dom.authStatus.textContent = "Session fermee.";
       dom.dataMessage.textContent = "Deconnexion effectuee.";
+      dom.authEmailInput.focus();
     } catch (error) {
       reportAuthError(error);
     }

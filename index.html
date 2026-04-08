@@ -9,7 +9,68 @@
     <script src="./config.js"></script>
   </head>
   <body>
-    <div class="page-shell">
+    <section id="auth-gate" class="auth-gate is-hidden">
+      <div class="auth-gate-shell">
+        <section id="auth-panel" class="auth-panel">
+          <p class="eyebrow">Classement et progression synchronises</p>
+          <h2 class="auth-title">Connectez-vous pour ouvrir CineQuizz</h2>
+          <p class="auth-copy">
+            Votre compte permet de conserver vos questions traitees, votre score
+            et votre place dans le classement global.
+          </p>
+
+          <div class="auth-highlights" aria-hidden="true">
+            <p>Questions chargees depuis Supabase</p>
+            <p>Progression liee a votre compte</p>
+            <p>Classement partage en direct</p>
+          </div>
+
+          <form id="auth-form" class="auth-form">
+            <label for="auth-nickname-input">Pseudo</label>
+            <input
+              id="auth-nickname-input"
+              name="nickname"
+              type="text"
+              minlength="3"
+              maxlength="24"
+              placeholder="Votre pseudo public"
+              autocomplete="nickname"
+            />
+
+            <label for="auth-email-input">E-mail</label>
+            <input
+              id="auth-email-input"
+              name="email"
+              type="email"
+              placeholder="vous@example.com"
+              autocomplete="email"
+            />
+
+            <label for="auth-password-input">Mot de passe</label>
+            <input
+              id="auth-password-input"
+              name="password"
+              type="password"
+              placeholder="Au moins 6 caracteres"
+              autocomplete="current-password"
+            />
+
+            <div class="action-row">
+              <button type="submit" class="primary-button" data-auth-action="sign-in">
+                Se connecter
+              </button>
+              <button type="submit" class="ghost-button" data-auth-action="sign-up">
+                Creer un compte
+              </button>
+            </div>
+          </form>
+
+          <p id="auth-status" class="auth-status" aria-live="polite"></p>
+        </section>
+      </div>
+    </section>
+
+    <div id="page-shell" class="page-shell">
       <header class="hero">
         <div>
           <p class="eyebrow">Quiz cinema deployable sur GitHub Pages</p>
@@ -26,55 +87,14 @@
             classement global.
           </p>
 
-          <section id="auth-panel" class="auth-panel is-hidden">
-            <div class="section-heading compact-heading">
-              <h2>Connexion</h2>
-              <p>
-                Connectez-vous pour conserver votre progression et apparaitre
-                dans le classement global.
-              </p>
-            </div>
-
-            <form id="auth-form" class="auth-form">
-              <label for="auth-email-input">E-mail</label>
-              <input
-                id="auth-email-input"
-                name="email"
-                type="email"
-                placeholder="vous@example.com"
-                autocomplete="email"
-              />
-
-              <label for="auth-password-input">Mot de passe</label>
-              <input
-                id="auth-password-input"
-                name="password"
-                type="password"
-                placeholder="Au moins 6 caracteres"
-                autocomplete="current-password"
-              />
-
-              <div class="action-row">
-                <button type="submit" class="primary-button" data-auth-action="sign-in">
-                  Se connecter
-                </button>
-                <button type="submit" class="ghost-button" data-auth-action="sign-up">
-                  Creer un compte
-                </button>
-              </div>
-            </form>
-
-            <div id="auth-session" class="auth-session is-hidden">
-              <p class="auth-identity">
-                Connecte avec <strong id="auth-email-value"></strong>
-              </p>
-              <button id="auth-signout-button" type="button" class="ghost-button">
-                Se deconnecter
-              </button>
-            </div>
-
-            <p id="auth-status" class="auth-status" aria-live="polite"></p>
-          </section>
+          <div id="auth-session" class="auth-session is-hidden">
+            <p class="auth-identity">
+              Connecte avec <strong id="auth-email-value"></strong>
+            </p>
+            <button id="auth-signout-button" type="button" class="ghost-button">
+              Se deconnecter
+            </button>
+          </div>
         </div>
       </header>
 
