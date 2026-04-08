@@ -26,19 +26,40 @@
             <p class="auth-kicker">Connexion</p>
             <h2 class="auth-title">Ouvrir l’application</h2>
 
-            <form id="auth-form" class="auth-form" method="post" novalidate>
-              <label for="auth-nickname-input">Pseudo public pour l'inscription</label>
-              <input
-                id="auth-nickname-input"
-                name="nickname"
-                type="text"
-                minlength="3"
-                maxlength="24"
-                placeholder="Requis uniquement a l'inscription"
-                autocomplete="nickname"
-              />
+            <div class="auth-mode-switch" role="tablist" aria-label="Mode d'authentification">
+              <button
+                id="auth-mode-signin"
+                type="button"
+                class="ghost-button auth-mode-button is-active"
+                data-auth-mode="sign-in"
+              >
+                Connexion
+              </button>
+              <button
+                id="auth-mode-signup"
+                type="button"
+                class="ghost-button auth-mode-button"
+                data-auth-mode="sign-up"
+              >
+                Inscription
+              </button>
+            </div>
 
-              <label for="auth-email-input">E-mail ou pseudo</label>
+            <form id="auth-form" class="auth-form" method="post" novalidate>
+              <div id="auth-nickname-field">
+                <label for="auth-nickname-input">Pseudo public pour l'inscription</label>
+                <input
+                  id="auth-nickname-input"
+                  name="nickname"
+                  type="text"
+                  minlength="3"
+                  maxlength="24"
+                  placeholder="Requis uniquement a l'inscription"
+                  autocomplete="nickname"
+                />
+              </div>
+
+              <label id="auth-identifier-label" for="auth-email-input">E-mail ou pseudo</label>
               <input
                 id="auth-email-input"
                 name="identifier"
@@ -57,11 +78,8 @@
               />
 
               <div class="action-row auth-actions">
-                <button type="submit" class="primary-button" data-auth-action="sign-in">
+                <button id="auth-submit-button" type="submit" class="primary-button">
                   Se connecter
-                </button>
-                <button type="submit" class="ghost-button" data-auth-action="sign-up">
-                  Creer un compte
                 </button>
               </div>
             </form>

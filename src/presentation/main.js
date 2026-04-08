@@ -17,13 +17,18 @@ const dom = {
   syncStatus: document.getElementById("sync-status"),
   authPanel: document.getElementById("auth-panel"),
   authForm: document.getElementById("auth-form"),
+  authModeSignin: document.getElementById("auth-mode-signin"),
+  authModeSignup: document.getElementById("auth-mode-signup"),
   authLocalButton: document.getElementById("auth-local-button"),
   authReady: document.getElementById("auth-ready"),
   authReadyEmail: document.getElementById("auth-ready-email"),
   authContinueButton: document.getElementById("auth-continue-button"),
+  authNicknameField: document.getElementById("auth-nickname-field"),
   authNicknameInput: document.getElementById("auth-nickname-input"),
+  authIdentifierLabel: document.getElementById("auth-identifier-label"),
   authEmailInput: document.getElementById("auth-email-input"),
   authPasswordInput: document.getElementById("auth-password-input"),
+  authSubmitButton: document.getElementById("auth-submit-button"),
   adminBadge: document.getElementById("admin-badge"),
   authSession: document.getElementById("auth-session"),
   authEmailValue: document.getElementById("auth-email-value"),
@@ -36,6 +41,7 @@ const dom = {
   nicknameForm: document.getElementById("nickname-form"),
   nicknameInput: document.getElementById("nickname-input"),
   nicknameSubmitButton: document.querySelector('#nickname-form button[type="submit"]'),
+  questionCard: document.querySelector(".question-card"),
   questionDifficulty: document.getElementById("question-difficulty"),
   questionProgress: document.getElementById("question-progress"),
   questionText: document.getElementById("question-text"),
@@ -98,6 +104,7 @@ const uiState = {
   contributionQuestionId: null,
   entryDismissed: false,
   viewModel: null,
+  authMode: "sign-in",
   runtimePreference: null,
   supabaseAvailable: false
 };
@@ -230,10 +237,29 @@ function setFeedbackMessage(message, variant = "") {
 
 function setAnswerFieldState(state = "") {
   dom.answerInput.classList.remove("is-correct", "is-wrong");
+  dom.questionCard.classList.remove("is-correct", "is-wrong");
 
   if (state) {
     dom.answerInput.classList.add(state);
+    dom.questionCard.classList.add(state);
   }
+}
+
+function renderAuthMode() {
+  const isSignUp = uiState.authMode === "sign-up";
+
+  dom.authModeSignin.classList.toggle("is-active", !isSignUp);
+  dom.authModeSignup.classList.toggle("is-active", isSignUp);
+  dom.authNicknameField.classList.toggle("is-hidden", !isSignUp);
+  dom.authNicknameInput.disabled = !isSignUp;
+  dom.authNicknameInput.required = isSignUp;
+  dom.authIdentifierLabel.textContent = isSignUp ? "E-mail" : "E-mail ou pseudo";
+  dom.authEmailInput.placeholder = isSignUp
+    ? "vous@example.com"
+    : "vous@example.com ou votre pseudo";
+  dom.authEmailInput.autocomplete = isSignUp ? "email" : "username";
+  dom.authPasswordInput.autocomplete = isSignUp ? "new-password" : "current-password";
+  dom.authSubmitButton.textContent = isSignUp ? "Creer un compte" : "Se connecter";
 }
 
 function reportUiError(error) {
@@ -541,9 +567,24 @@ async function main() {
 
   await bootApplication();
   syncContributionMode();
+  renderAuthMode();
 
   dom.tabs.forEach((tabButton) => {
     tabButton.addEventListener("click", () => activateTab(tabButton.dataset.tabTarget));
+  });
+
+  [dom.authModeSignin, dom.authModeSignup].forEach((button) => {
+    button.addEventListener("click", () => {
+      uiState.authMode = button.dataset.authMode;
+      dom.authStatus.textContent = "";
+      renderAuthMode();
+
+      if (uiState.authMode === "sign-up") {
+        dom.authNicknameInput.focus();
+      } else {
+        dom.authEmailInput.focus();
+      }
+    });
   });
 
   dom.difficultyButtons.forEach((button) => {
@@ -577,7 +618,7 @@ async function main() {
     event.preventDefault();
 
     try {
-      const action = event.submitter?.dataset.authAction;
+      const action = uiState.authMode;
       const identifier = dom.authEmailInput.value.trim();
       const password = dom.authPasswordInput.value;
       const preferredNickname = dom.authNicknameInput.value.trim();

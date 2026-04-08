@@ -409,6 +409,17 @@ button {
   line-height: 1.6;
 }
 
+.auth-mode-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.auth-mode-button {
+  justify-content: center;
+}
+
 .auth-actions {
   margin-top: 12px;
 }
@@ -447,6 +458,10 @@ button {
 .question-card {
   position: relative;
   overflow: hidden;
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease;
 }
 
 .question-card::after {
@@ -458,6 +473,30 @@ button {
   height: 4px;
   border-radius: 999px;
   background: linear-gradient(90deg, rgba(191, 75, 40, 0.75), rgba(221, 123, 74, 0.22));
+}
+
+.question-card.is-correct {
+  border-color: rgba(24, 121, 78, 0.28);
+  background:
+    linear-gradient(180deg, rgba(24, 121, 78, 0.05), rgba(24, 121, 78, 0.02)),
+    var(--panel);
+  box-shadow: 0 24px 60px rgba(24, 121, 78, 0.12);
+}
+
+.question-card.is-correct::after {
+  background: linear-gradient(90deg, rgba(24, 121, 78, 0.78), rgba(24, 121, 78, 0.2));
+}
+
+.question-card.is-wrong {
+  border-color: rgba(148, 37, 37, 0.24);
+  background:
+    linear-gradient(180deg, rgba(148, 37, 37, 0.04), rgba(148, 37, 37, 0.02)),
+    var(--panel);
+  box-shadow: 0 24px 60px rgba(148, 37, 37, 0.12);
+}
+
+.question-card.is-wrong::after {
+  background: linear-gradient(90deg, rgba(148, 37, 37, 0.78), rgba(148, 37, 37, 0.18));
 }
 
 .question-meta {
