@@ -5,6 +5,20 @@ function toStats(profile) {
   };
 }
 
+function sanitizeAnswerList(answer, acceptedAnswers = []) {
+  return [...new Set([answer, ...(acceptedAnswers ?? [])].map((value) => String(value ?? "").trim()).filter(Boolean))];
+}
+
+function slugify(value) {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 48);
+}
+
 export class SupabaseGameRepository {
   constructor(client) {
     this.client = client;
@@ -75,6 +89,201 @@ export class SupabaseGameRepository {
     }
 
     return data ?? [];
+  }
+
+  async getModerationRequests() {
+    if (!this.userId || !this.profile?.is_admin) {
+      return [];
+    }
+
+    const { data, error } = await this.client
+      .from("question_moderation_requests")
+      .select(`
+        id,
+        requester_user_id,
+        requester_nickname,
+        question_id,
+        request_type,
+        status,
+        reason,
+        proposed_prompt,
+        proposed_answer,
+        proposed_accepted_answers,
+        proposed_difficulty,
+        question_snapshot,
+        admin_note,
+        reviewed_by,
+        reviewed_at,
+        created_at
+      `)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      throw new Error(`Chargement des demandes admin impossible: ${error.message}`);
+    }
+
+    return data ?? [];
+  }
+
+  async submitQuestionFeedback({
+    type,
+    questionId,
+    reason,
+    questionSnapshot,
+    proposedPrompt,
+    proposedAnswer,
+    proposedAcceptedAnswers,
+    proposedDifficulty
+  }) {
+    this.#assertAuthenticated();
+
+    const payload = {
+      requester_user_id: this.userId,
+      requester_nickname: this.profile?.nickname ?? "Spectateur",
+      question_id: questionId,
+      request_type: type,
+      reason: reason.trim(),
+      question_snapshot: questionSnapshot ?? {}
+    };
+
+    if (type === "edit") {
+      payload.proposed_prompt = proposedPrompt.trim();
+      payload.proposed_answer = proposedAnswer.trim();
+      payload.proposed_accepted_answers = sanitizeAnswerList(proposedAnswer, proposedAcceptedAnswers);
+      payload.proposed_difficulty = proposedDifficulty;
+    }
+
+    const { error } = await this.client.from("question_moderation_requests").insert(payload);
+
+    if (error) {
+      throw new Error(`Envoi de la demande impossible: ${error.message}`);
+    }
+  }
+
+  async submitNewQuestionSuggestion({
+    reason,
+    prompt,
+    answer,
+    acceptedAnswers,
+    difficulty
+  }) {
+    this.#assertAuthenticated();
+
+    const { error } = await this.client.from("question_moderation_requests").insert({
+      requester_user_id: this.userId,
+      requester_nickname: this.profile?.nickname ?? "Spectateur",
+      request_type: "new",
+      reason: reason.trim(),
+      proposed_prompt: prompt.trim(),
+      proposed_answer: answer.trim(),
+      proposed_accepted_answers: sanitizeAnswerList(answer, acceptedAnswers),
+      proposed_difficulty: difficulty,
+      question_snapshot: {}
+    });
+
+    if (error) {
+      throw new Error(`Envoi de la nouvelle question impossible: ${error.message}`);
+    }
+  }
+
+  async deleteQuestion(questionId) {
+    this.#assertAdmin();
+
+    const { error } = await this.client
+      .from("questions")
+      .update({ is_active: false })
+      .eq("id", questionId);
+
+    if (error) {
+      throw new Error(`Suppression impossible: ${error.message}`);
+    }
+  }
+
+  async reviewModerationRequest({ requestId, decision, adminNote = "" }) {
+    this.#assertAdmin();
+
+    const { data: request, error: requestError } = await this.client
+      .from("question_moderation_requests")
+      .select(`
+        id,
+        question_id,
+        request_type,
+        status,
+        proposed_prompt,
+        proposed_answer,
+        proposed_accepted_answers,
+        proposed_difficulty,
+        requester_nickname
+      `)
+      .eq("id", requestId)
+      .single();
+
+    if (requestError) {
+      throw new Error(`Chargement de la demande impossible: ${requestError.message}`);
+    }
+
+    let resultingQuestionId = request.question_id ?? null;
+
+    if (decision === "approve") {
+      if (request.request_type === "edit" && request.question_id) {
+        const { error } = await this.client
+          .from("questions")
+          .update({
+            prompt: request.proposed_prompt,
+            answer: request.proposed_answer,
+            accepted_answers: sanitizeAnswerList(
+              request.proposed_answer,
+              request.proposed_accepted_answers ?? []
+            ),
+            difficulty: request.proposed_difficulty
+          })
+          .eq("id", request.question_id);
+
+        if (error) {
+          throw new Error(`Application de la modification impossible: ${error.message}`);
+        }
+      }
+
+      if (request.request_type === "new") {
+        resultingQuestionId = this.#buildCommunityQuestionId(request.proposed_prompt);
+
+        const { error } = await this.client.from("questions").insert({
+          id: resultingQuestionId,
+          difficulty: request.proposed_difficulty ?? "medium",
+          prompt: request.proposed_prompt,
+          answer: request.proposed_answer,
+          accepted_answers: sanitizeAnswerList(
+            request.proposed_answer,
+            request.proposed_accepted_answers ?? []
+          ),
+          metadata: {
+            source: "community-suggestion",
+            requestId: request.id,
+            requesterNickname: request.requester_nickname
+          },
+          is_active: true
+        });
+
+        if (error) {
+          throw new Error(`Creation de la question impossible: ${error.message}`);
+        }
+      }
+    }
+
+    const { error: updateError } = await this.client
+      .from("question_moderation_requests")
+      .update({
+        status: decision === "approve" ? "approved" : "rejected",
+        admin_note: adminNote.trim() || null,
+        reviewed_by: this.userId,
+        reviewed_at: new Date().toISOString(),
+        question_id: resultingQuestionId
+      })
+      .eq("id", requestId);
+
+    if (updateError) {
+      throw new Error(`Mise a jour de la moderation impossible: ${updateError.message}`);
+    }
   }
 
   async reopenQuestion(questionId) {
@@ -181,6 +390,7 @@ export class SupabaseGameRepository {
     return {
       userId: this.userId,
       nickname: this.profile.nickname,
+      isAdmin: Boolean(this.profile.is_admin),
       stats: toStats(this.profile),
       answeredQuestionIds: await this.#loadAnsweredQuestionIds(),
       mode: this.mode,
@@ -196,6 +406,7 @@ export class SupabaseGameRepository {
     return {
       userId: null,
       nickname,
+      isAdmin: false,
       stats: {
         totalAnswered: 0,
         totalCorrect: 0
@@ -226,6 +437,14 @@ export class SupabaseGameRepository {
     }
   }
 
+  #assertAdmin() {
+    this.#assertAuthenticated();
+
+    if (!this.profile?.is_admin) {
+      throw new Error("Action reservee aux administrateurs.");
+    }
+  }
+
   async #upsertProfile(nickname) {
     const { error } = await this.client.from("profiles").upsert(
       {
@@ -245,7 +464,7 @@ export class SupabaseGameRepository {
   async #loadProfile() {
     const { data, error } = await this.client
       .from("profiles")
-      .select("user_id,nickname,total_correct,total_answered")
+      .select("user_id,nickname,is_admin,total_correct,total_answered")
       .eq("user_id", this.userId)
       .single();
 
@@ -267,5 +486,11 @@ export class SupabaseGameRepository {
     }
 
     return (data ?? []).map((entry) => entry.question_id);
+  }
+
+  #buildCommunityQuestionId(prompt) {
+    const slug = slugify(prompt) || "question";
+    const suffix = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+    return `community-${slug}-${suffix}`;
   }
 }

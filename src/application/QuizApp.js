@@ -37,6 +37,7 @@ export class QuizApp {
       profile: {
         userId: null,
         nickname: "Spectateur",
+        isAdmin: false,
         stats: {
           totalAnswered: 0,
           totalCorrect: 0
@@ -51,6 +52,7 @@ export class QuizApp {
       currentQuestion: null,
       currentResult: null,
       leaderboard: [],
+      moderationRequests: [],
       mode: "local"
     };
   }
@@ -85,6 +87,8 @@ export class QuizApp {
       currentQuestion: this.state.currentQuestion,
       currentResult: this.state.currentResult,
       leaderboard: this.state.leaderboard,
+      moderationRequests: this.state.moderationRequests,
+      canContribute: this.state.mode === "supabase" && this.state.auth.isAuthenticated,
       stats: {
         ...this.state.profile.stats,
         accuracy: accuracyFromStats(this.state.profile.stats),
@@ -175,6 +179,92 @@ export class QuizApp {
     const sessionState = await this.gameRepository.signOut(this.state.profile.nickname);
     await this.#applySessionState(sessionState);
     this.pickNextQuestion();
+    return this.getViewModel();
+  }
+
+  async submitQuestionFeedback({
+    type,
+    questionId,
+    reason,
+    prompt,
+    answer,
+    aliases,
+    difficulty
+  }) {
+    this.#assertCanUseSupabaseProfile();
+
+    if (typeof this.gameRepository.submitQuestionFeedback !== "function") {
+      throw new Error("Les signalements ne sont pas disponibles dans ce mode.");
+    }
+
+    const currentQuestion = this.#findQuestion(questionId);
+
+    if (!currentQuestion) {
+      throw new Error("Question introuvable.");
+    }
+
+    if (!reason.trim()) {
+      throw new Error("Merci d'expliquer votre demande.");
+    }
+
+    if (type === "edit" && (!prompt.trim() || !answer.trim())) {
+      throw new Error("Une proposition de modification doit contenir une question et une reponse.");
+    }
+
+    await this.gameRepository.submitQuestionFeedback({
+      type,
+      questionId,
+      reason,
+      questionSnapshot: currentQuestion.toJSON(),
+      proposedPrompt: type === "edit" ? prompt : null,
+      proposedAnswer: type === "edit" ? answer : null,
+      proposedAcceptedAnswers: type === "edit" ? aliases : [],
+      proposedDifficulty: type === "edit" ? difficulty : null
+    });
+
+    await this.#refreshModerationRequests();
+    return this.getViewModel();
+  }
+
+  async submitNewQuestionSuggestion({ prompt, answer, aliases, difficulty, reason }) {
+    this.#assertCanUseSupabaseProfile();
+
+    if (typeof this.gameRepository.submitNewQuestionSuggestion !== "function") {
+      throw new Error("Les propositions de questions ne sont pas disponibles dans ce mode.");
+    }
+
+    if (!prompt.trim() || !answer.trim()) {
+      throw new Error("Une nouvelle question doit contenir une question et une reponse.");
+    }
+
+    await this.gameRepository.submitNewQuestionSuggestion({
+      prompt,
+      answer,
+      acceptedAnswers: aliases,
+      difficulty,
+      reason
+    });
+
+    await this.#refreshModerationRequests();
+    return this.getViewModel();
+  }
+
+  async deleteQuestion(questionId) {
+    this.#assertAdmin();
+    await this.gameRepository.deleteQuestion(questionId);
+    await this.#reloadQuestions();
+    this.#syncCurrentQuestionAfterCatalogReload(questionId);
+    await this.#refreshModerationRequests();
+    return this.getViewModel();
+  }
+
+  async reviewModerationRequest({ requestId, decision, adminNote }) {
+    this.#assertAdmin();
+    await this.gameRepository.reviewModerationRequest({ requestId, decision, adminNote });
+    const currentQuestionId = this.state.currentQuestion?.id ?? null;
+    await this.#reloadQuestions();
+    this.#syncCurrentQuestionAfterCatalogReload(currentQuestionId);
+    await this.#refreshModerationRequests();
     return this.getViewModel();
   }
 
@@ -274,6 +364,7 @@ export class QuizApp {
   async #applySessionState(sessionState) {
     this.state.profile.userId = sessionState.userId;
     this.state.profile.nickname = sessionState.nickname;
+    this.state.profile.isAdmin = Boolean(sessionState.isAdmin);
     this.state.profile.stats = sessionState.stats;
     this.state.auth = sessionState.auth ?? {
       isAuthenticated: true,
@@ -282,6 +373,7 @@ export class QuizApp {
     this.state.answeredQuestionIds = new Set(sessionState.answeredQuestionIds);
     this.state.mode = sessionState.mode;
     this.state.leaderboard = await this.gameRepository.getLeaderboard();
+    await this.#refreshModerationRequests();
   }
 
   #applyOverride(question, override) {
@@ -333,9 +425,39 @@ export class QuizApp {
     }
   }
 
+  async #refreshModerationRequests() {
+    if (typeof this.gameRepository.getModerationRequests !== "function") {
+      this.state.moderationRequests = [];
+      return;
+    }
+
+    this.state.moderationRequests = this.state.profile.isAdmin
+      ? await this.gameRepository.getModerationRequests()
+      : [];
+  }
+
+  #syncCurrentQuestionAfterCatalogReload(preferredQuestionId = null) {
+    const activeQuestionId = preferredQuestionId ?? this.state.currentQuestion?.id ?? null;
+    const refreshedQuestion = activeQuestionId ? this.#findQuestion(activeQuestionId) : null;
+
+    if (refreshedQuestion && refreshedQuestion.difficulty === this.state.difficulty) {
+      this.state.currentQuestion = refreshedQuestion;
+      this.state.currentResult = null;
+      return;
+    }
+
+    this.pickNextQuestion();
+  }
+
   #assertCanUseSupabaseProfile() {
     if (this.state.mode === "supabase" && !this.state.auth.isAuthenticated) {
       throw new Error("Connexion requise pour sauvegarder la progression et apparaitre dans le classement.");
+    }
+  }
+
+  #assertAdmin() {
+    if (!this.state.profile.isAdmin) {
+      throw new Error("Action reservee aux administrateurs.");
     }
   }
 }

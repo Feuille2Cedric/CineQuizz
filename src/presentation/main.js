@@ -28,6 +28,7 @@ const dom = {
   authEmailValue: document.getElementById("auth-email-value"),
   authSignoutButton: document.getElementById("auth-signout-button"),
   authStatus: document.getElementById("auth-status"),
+  adminTabButton: document.getElementById("admin-tab-button"),
   tabs: [...document.querySelectorAll(".tab")],
   panels: [...document.querySelectorAll(".tab-panel")],
   difficultyButtons: [...document.querySelectorAll(".difficulty-button")],
@@ -42,7 +43,9 @@ const dom = {
   answerSubmitButton: document.querySelector('#answer-form button[type="submit"]'),
   nextQuestionButton: document.getElementById("next-question-button"),
   answerFeedback: document.getElementById("answer-feedback"),
+  contributionToggleButton: document.getElementById("contribution-toggle-button"),
   editToggleButton: document.getElementById("edit-toggle-button"),
+  adminDeleteQuestionButton: document.getElementById("admin-delete-question-button"),
   editPanel: document.getElementById("edit-panel"),
   editForm: document.getElementById("edit-form"),
   editPrompt: document.getElementById("edit-prompt"),
@@ -50,6 +53,26 @@ const dom = {
   editAliases: document.getElementById("edit-aliases"),
   editDifficulty: document.getElementById("edit-difficulty"),
   clearOverrideButton: document.getElementById("clear-override-button"),
+  contributionStatus: document.getElementById("contribution-status"),
+  contributionQuestionMeta: document.getElementById("contribution-question-meta"),
+  contributionQuestionText: document.getElementById("contribution-question-text"),
+  questionFeedbackForm: document.getElementById("question-feedback-form"),
+  questionFeedbackType: document.getElementById("question-feedback-type"),
+  questionFeedbackReason: document.getElementById("question-feedback-reason"),
+  feedbackEditFields: document.getElementById("feedback-edit-fields"),
+  feedbackPrompt: document.getElementById("feedback-prompt"),
+  feedbackAnswer: document.getElementById("feedback-answer"),
+  feedbackAliases: document.getElementById("feedback-aliases"),
+  feedbackDifficulty: document.getElementById("feedback-difficulty"),
+  questionFeedbackSubmit: document.getElementById("question-feedback-submit"),
+  newQuestionForm: document.getElementById("new-question-form"),
+  newQuestionPrompt: document.getElementById("new-question-prompt"),
+  newQuestionAnswer: document.getElementById("new-question-answer"),
+  newQuestionAliases: document.getElementById("new-question-aliases"),
+  newQuestionDifficulty: document.getElementById("new-question-difficulty"),
+  newQuestionReason: document.getElementById("new-question-reason"),
+  newQuestionSubmit: document.getElementById("new-question-submit"),
+  adminRequestList: document.getElementById("admin-request-list"),
   leaderboardBody: document.getElementById("leaderboard-body"),
   statCorrect: document.getElementById("stat-correct"),
   statAnswered: document.getElementById("stat-answered"),
@@ -68,6 +91,7 @@ const dom = {
 const uiState = {
   editPanelOpen: false,
   editQuestionId: null,
+  contributionQuestionId: null,
   entryDismissed: false,
   viewModel: null,
   runtimePreference: null,
@@ -119,6 +143,74 @@ function serializeLeaderboardRows(entries, currentUserId) {
     .join("");
 }
 
+function serializeModerationRequests(requests) {
+  if (!requests.length) {
+    return `<p class="empty-state">Aucune demande de moderation pour le moment.</p>`;
+  }
+
+  return requests
+    .map((request) => {
+      const snapshotPrompt = request.question_snapshot?.prompt;
+      const prompt = request.proposed_prompt ?? snapshotPrompt ?? "Question non renseignee";
+      const answer = request.proposed_answer ?? request.question_snapshot?.answer ?? "Non renseignee";
+      const difficulty =
+        request.proposed_difficulty ??
+        request.question_snapshot?.difficulty ??
+        (request.request_type === "report" ? "-" : "medium");
+      const isPending = request.status === "pending";
+
+      return `
+        <article class="request-card">
+          <div class="request-topline">
+            <div>
+              <p class="request-badges">
+                <span class="mode-pill">${escapeHtml(request.request_type)}</span>
+                <span class="mode-pill request-status request-status-${escapeHtml(request.status)}">${escapeHtml(request.status)}</span>
+              </p>
+              <h3>${escapeHtml(prompt)}</h3>
+            </div>
+            <p class="request-meta">
+              ${escapeHtml(request.requester_nickname)} | ${new Date(request.created_at).toLocaleString("fr-FR")}
+            </p>
+          </div>
+
+          <div class="request-body">
+            <p><strong>Question cible:</strong> ${escapeHtml(request.question_id ?? "nouvelle question")}</p>
+            <p><strong>Difficulte:</strong> ${escapeHtml(difficulty)}</p>
+            <p><strong>Reponse:</strong> ${escapeHtml(answer)}</p>
+            <p><strong>Motif:</strong> ${escapeHtml(request.reason || "Aucun detail")}</p>
+            ${
+              request.admin_note
+                ? `<p><strong>Note admin:</strong> ${escapeHtml(request.admin_note)}</p>`
+                : ""
+            }
+          </div>
+
+          ${
+            isPending
+              ? `<div class="action-row request-actions">
+                  <button type="button" class="primary-button" data-admin-action="approve" data-request-id="${escapeHtml(request.id)}">
+                    Valider
+                  </button>
+                  <button type="button" class="ghost-button" data-admin-action="reject" data-request-id="${escapeHtml(request.id)}">
+                    Refuser
+                  </button>
+                  ${
+                    request.question_id
+                      ? `<button type="button" class="ghost-button danger-button" data-admin-action="delete-question" data-request-id="${escapeHtml(request.id)}" data-question-id="${escapeHtml(request.question_id)}">
+                          Retirer la question
+                        </button>`
+                      : ""
+                  }
+                </div>`
+              : ""
+          }
+        </article>
+      `;
+    })
+    .join("");
+}
+
 function setFeedbackMessage(message, variant = "") {
   dom.answerFeedback.textContent = message;
   dom.answerFeedback.className = "feedback";
@@ -152,18 +244,49 @@ function fillEditForm(question) {
   dom.editDifficulty.value = question.difficulty;
 }
 
+function fillContributionEditForm(question) {
+  if (!question) {
+    return;
+  }
+
+  dom.feedbackPrompt.value = question.prompt;
+  dom.feedbackAnswer.value = question.answer;
+  dom.feedbackAliases.value = question.acceptedAnswers.slice(1).join(", ");
+  dom.feedbackDifficulty.value = question.difficulty;
+}
+
+function syncContributionMode() {
+  const wantsEdit = dom.questionFeedbackType.value === "edit";
+  dom.feedbackEditFields.classList.toggle("is-hidden", !wantsEdit);
+}
+
 function render(viewModel) {
   uiState.viewModel = viewModel;
 
   const isSupabase = viewModel.mode === "supabase";
   const requiresAuth = isSupabase && !viewModel.auth.isAuthenticated;
+  const canContribute = Boolean(viewModel.canContribute);
   const shouldShowEntry = isSupabase && (!uiState.entryDismissed || requiresAuth);
   const activeQuestionId = viewModel.currentQuestion?.id ?? null;
   const canEditQuestion = Boolean(activeQuestionId) && !requiresAuth;
+  const canAdministerQuestion = Boolean(activeQuestionId) && viewModel.profile.isAdmin;
 
   if (uiState.editQuestionId !== activeQuestionId) {
     uiState.editPanelOpen = false;
     uiState.editQuestionId = activeQuestionId;
+  }
+
+  if (uiState.contributionQuestionId !== activeQuestionId) {
+    uiState.contributionQuestionId = activeQuestionId;
+
+    if (viewModel.currentQuestion) {
+      fillContributionEditForm(viewModel.currentQuestion);
+    } else {
+      dom.feedbackPrompt.value = "";
+      dom.feedbackAnswer.value = "";
+      dom.feedbackAliases.value = "";
+      dom.feedbackDifficulty.value = "medium";
+    }
   }
 
   dom.storageMode.textContent = isSupabase ? "Mode Supabase" : "Mode local";
@@ -184,6 +307,11 @@ function render(viewModel) {
   dom.authReadyEmail.textContent = viewModel.auth.email ?? "";
   dom.authSession.classList.toggle("is-hidden", !isSupabase || !viewModel.auth.isAuthenticated);
   dom.authEmailValue.textContent = viewModel.auth.email ?? "";
+  dom.adminTabButton.classList.toggle("is-hidden", !viewModel.profile.isAdmin);
+
+  if (!viewModel.profile.isAdmin && document.querySelector("#admin-tab.is-active")) {
+    activateTab("quiz-tab");
+  }
 
   dom.nicknameInput.value = viewModel.profile.nickname ?? "";
   dom.nicknameInput.disabled = requiresAuth;
@@ -211,7 +339,9 @@ function render(viewModel) {
   dom.questionProgress.textContent = requiresAuth
     ? "Connexion requise pour jouer en mode Supabase"
     : `${viewModel.stats.remainingForDifficulty} question(s) restante(s) sur cette difficulte`;
+  dom.contributionToggleButton.classList.toggle("is-hidden", !canContribute || !activeQuestionId);
   dom.editToggleButton.classList.toggle("is-hidden", !canEditQuestion);
+  dom.adminDeleteQuestionButton.classList.toggle("is-hidden", !canAdministerQuestion);
   dom.editToggleButton.textContent = uiState.editPanelOpen
     ? "Masquer l'editeur"
     : "Corriger cette question";
@@ -257,11 +387,46 @@ function render(viewModel) {
   }
 
   dom.editPanel.classList.toggle("is-hidden", !canEditQuestion || !uiState.editPanelOpen);
+  syncContributionMode();
+
+  if (!canContribute) {
+    dom.contributionStatus.textContent = isSupabase
+      ? "Connectez-vous pour envoyer des signalements, proposer des modifications ou soumettre de nouvelles questions."
+      : "Les contributions communautaires sont disponibles uniquement en mode Supabase.";
+  } else {
+    dom.contributionStatus.textContent =
+      "Vos demandes arrivent dans la file de moderation. Un administrateur peut les valider ou les refuser.";
+  }
+
+  dom.questionFeedbackForm.classList.toggle("is-hidden", !viewModel.currentQuestion);
+  dom.questionFeedbackType.disabled = !canContribute || !viewModel.currentQuestion;
+  dom.questionFeedbackReason.disabled = !canContribute || !viewModel.currentQuestion;
+  dom.feedbackPrompt.disabled = !canContribute;
+  dom.feedbackAnswer.disabled = !canContribute;
+  dom.feedbackAliases.disabled = !canContribute;
+  dom.feedbackDifficulty.disabled = !canContribute;
+  dom.questionFeedbackSubmit.disabled = !canContribute || !viewModel.currentQuestion;
+  dom.newQuestionPrompt.disabled = !canContribute;
+  dom.newQuestionAnswer.disabled = !canContribute;
+  dom.newQuestionAliases.disabled = !canContribute;
+  dom.newQuestionDifficulty.disabled = !canContribute;
+  dom.newQuestionReason.disabled = !canContribute;
+  dom.newQuestionSubmit.disabled = !canContribute;
+
+  if (!viewModel.currentQuestion) {
+    dom.contributionQuestionMeta.textContent = "Aucune question active.";
+    dom.contributionQuestionText.textContent =
+      "Chargez une question pour envoyer un signalement ou proposer une meilleure version.";
+  } else {
+    dom.contributionQuestionMeta.textContent = `${difficultyLabel(viewModel.currentQuestion.difficulty)} | ${viewModel.currentQuestion.id}`;
+    dom.contributionQuestionText.textContent = viewModel.currentQuestion.prompt;
+  }
 
   dom.leaderboardBody.innerHTML = serializeLeaderboardRows(
     viewModel.leaderboard,
     viewModel.profile.userId
   );
+  dom.adminRequestList.innerHTML = serializeModerationRequests(viewModel.moderationRequests);
 }
 
 function activateTab(targetId) {
@@ -347,6 +512,7 @@ async function main() {
   }
 
   await bootApplication();
+  syncContributionMode();
 
   dom.tabs.forEach((tabButton) => {
     tabButton.addEventListener("click", () => activateTab(tabButton.dataset.tabTarget));
@@ -469,6 +635,11 @@ async function main() {
     }
   });
 
+  dom.contributionToggleButton.addEventListener("click", () => {
+    activateTab("contributions-tab");
+    dom.questionFeedbackReason.focus();
+  });
+
   dom.editToggleButton.addEventListener("click", () => {
     uiState.editPanelOpen = !uiState.editPanelOpen;
     dom.editToggleButton.textContent = uiState.editPanelOpen
@@ -482,6 +653,92 @@ async function main() {
     render(app.pickNextQuestion());
     if (!dom.answerInput.disabled) {
       dom.answerInput.focus();
+    }
+  });
+
+  dom.questionFeedbackType.addEventListener("change", () => {
+    syncContributionMode();
+
+    if (dom.questionFeedbackType.value === "edit" && uiState.viewModel?.currentQuestion) {
+      fillContributionEditForm(uiState.viewModel.currentQuestion);
+    }
+  });
+
+  dom.questionFeedbackForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    try {
+      const currentQuestionId = uiState.viewModel?.currentQuestion?.id;
+
+      if (!currentQuestionId) {
+        throw new Error("Aucune question active a signaler.");
+      }
+
+      const requestType = dom.questionFeedbackType.value;
+      const result = await app.submitQuestionFeedback({
+        type: requestType,
+        questionId: currentQuestionId,
+        reason: dom.questionFeedbackReason.value.trim(),
+        prompt: dom.feedbackPrompt.value,
+        answer: dom.feedbackAnswer.value,
+        aliases: dom.feedbackAliases.value
+          .split(",")
+          .map((value) => value.trim())
+          .filter(Boolean),
+        difficulty: dom.feedbackDifficulty.value
+      });
+
+      render(result);
+      dom.questionFeedbackReason.value = "";
+      dom.dataMessage.textContent =
+        requestType === "edit"
+          ? "Proposition de modification envoyee a l'administration."
+          : "Signalement envoye a l'administration.";
+    } catch (error) {
+      reportUiError(error);
+    }
+  });
+
+  dom.newQuestionForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    try {
+      const result = await app.submitNewQuestionSuggestion({
+        prompt: dom.newQuestionPrompt.value,
+        answer: dom.newQuestionAnswer.value,
+        aliases: dom.newQuestionAliases.value
+          .split(",")
+          .map((value) => value.trim())
+          .filter(Boolean),
+        difficulty: dom.newQuestionDifficulty.value,
+        reason: dom.newQuestionReason.value.trim()
+      });
+
+      render(result);
+      dom.newQuestionForm.reset();
+      dom.newQuestionDifficulty.value = "medium";
+      dom.dataMessage.textContent = "Nouvelle question envoyee a l'administration.";
+    } catch (error) {
+      reportUiError(error);
+    }
+  });
+
+  dom.adminDeleteQuestionButton.addEventListener("click", async () => {
+    try {
+      const questionId = uiState.viewModel?.currentQuestion?.id;
+
+      if (!questionId) {
+        throw new Error("Aucune question active a retirer.");
+      }
+
+      if (!window.confirm("Retirer cette question du catalogue actif ?")) {
+        return;
+      }
+
+      render(await app.deleteQuestion(questionId));
+      dom.dataMessage.textContent = "Question retiree du catalogue actif.";
+    } catch (error) {
+      reportUiError(error);
     }
   });
 
@@ -549,6 +806,55 @@ async function main() {
     try {
       render(await app.resetLocalCustomData());
       dom.dataMessage.textContent = "Imports locaux et corrections locales reinitialises.";
+    } catch (error) {
+      reportUiError(error);
+    }
+  });
+
+  dom.adminRequestList.addEventListener("click", async (event) => {
+    const button = event.target.closest("[data-admin-action]");
+
+    if (!button) {
+      return;
+    }
+
+    try {
+      const requestId = button.dataset.requestId;
+      const adminAction = button.dataset.adminAction;
+
+      if (adminAction === "delete-question") {
+        const questionId = button.dataset.questionId;
+
+        if (!questionId) {
+          throw new Error("Question cible introuvable.");
+        }
+
+        if (!window.confirm("Retirer cette question du catalogue actif ?")) {
+          return;
+        }
+
+        render(await app.deleteQuestion(questionId));
+        dom.dataMessage.textContent = "Question retiree du catalogue actif.";
+        return;
+      }
+
+      const adminNote =
+        adminAction === "reject"
+          ? window.prompt("Optionnel: note de refus", "") ?? ""
+          : window.prompt("Optionnel: note de validation", "") ?? "";
+
+      render(
+        await app.reviewModerationRequest({
+          requestId,
+          decision: adminAction === "approve" ? "approve" : "reject",
+          adminNote
+        })
+      );
+
+      dom.dataMessage.textContent =
+        adminAction === "approve"
+          ? "Demande validee."
+          : "Demande refusee.";
     } catch (error) {
       reportUiError(error);
     }

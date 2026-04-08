@@ -244,7 +244,7 @@ def build_movie_questions(movie, director_context):
             build_question(
                 f"{movie_id}-hard-gap-number-between-neighbors",
                 "hard",
-                f'Combien d''annees separent "{previous_movie["title"]}" et "{title}" dans la filmographie de {director} ?',
+                f"Combien d'annees separent \"{previous_movie['title']}\" et \"{title}\" dans la filmographie de {director} ?",
                 str(previous_gap),
                 [str(previous_gap)],
                 {**metadata, "template": "hard-gap-number-between-neighbors"},
@@ -287,7 +287,7 @@ def build_movie_questions(movie, director_context):
             build_question(
                 f"{movie_id}-hard-gap-number-after-previous",
                 "hard",
-                f'Combien d''annees separent "{previous_movie["title"]}" et "{title}" dans la filmographie de {director} ?',
+                f"Combien d'annees separent \"{previous_movie['title']}\" et \"{title}\" dans la filmographie de {director} ?",
                 str(previous_gap),
                 [str(previous_gap)],
                 {**metadata, "template": "hard-gap-number-after-previous"},
@@ -330,7 +330,7 @@ def build_movie_questions(movie, director_context):
             build_question(
                 f"{movie_id}-hard-gap-number-before-next",
                 "hard",
-                f'Combien d''annees separent "{title}" et "{next_movie["title"]}" dans la filmographie de {director} ?',
+                f"Combien d'annees separent \"{title}\" et \"{next_movie['title']}\" dans la filmographie de {director} ?",
                 str(next_gap),
                 [str(next_gap)],
                 {**metadata, "template": "hard-gap-number-before-next"},

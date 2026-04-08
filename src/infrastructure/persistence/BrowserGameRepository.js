@@ -52,6 +52,7 @@ export class BrowserGameRepository {
     return {
       userId: this.profile.userId,
       nickname: this.profile.nickname,
+      isAdmin: false,
       stats: toStats(this.profile),
       answeredQuestionIds: Object.keys(this.progress),
       mode: this.mode
@@ -137,6 +138,26 @@ export class BrowserGameRepository {
         return left.nickname.localeCompare(right.nickname);
       })
       .slice(0, 25);
+  }
+
+  async getModerationRequests() {
+    return [];
+  }
+
+  async submitQuestionFeedback() {
+    throw new Error("Les signalements sont disponibles uniquement en mode Supabase.");
+  }
+
+  async submitNewQuestionSuggestion() {
+    throw new Error("Les propositions de questions sont disponibles uniquement en mode Supabase.");
+  }
+
+  async deleteQuestion() {
+    throw new Error("La suppression de questions est reservee aux administrateurs Supabase.");
+  }
+
+  async reviewModerationRequest() {
+    throw new Error("La moderation est reservee aux administrateurs Supabase.");
   }
 
   #persistProfile() {

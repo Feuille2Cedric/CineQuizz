@@ -99,8 +99,10 @@
 
         <nav class="tabs" aria-label="Navigation principale">
           <button class="tab is-active" data-tab-target="quiz-tab">Quiz</button>
+          <button class="tab" data-tab-target="contributions-tab">Contributions</button>
           <button class="tab" data-tab-target="leaderboard-tab">Classement</button>
           <button class="tab" data-tab-target="data-tab">Donnees</button>
+          <button id="admin-tab-button" class="tab is-hidden" data-tab-target="admin-tab">Admin</button>
         </nav>
 
         <div class="app-meta">
@@ -181,8 +183,14 @@
               <div id="answer-feedback" class="feedback" aria-live="polite"></div>
 
               <div class="question-actions">
+                <button id="contribution-toggle-button" type="button" class="ghost-button is-hidden">
+                  Signaler / proposer une modif
+                </button>
                 <button id="edit-toggle-button" type="button" class="ghost-button is-hidden">
                   Corriger cette question
+                </button>
+                <button id="admin-delete-question-button" type="button" class="ghost-button danger-button is-hidden">
+                  Retirer cette question
                 </button>
               </div>
 
@@ -230,6 +238,119 @@
                 </form>
               </section>
             </article>
+          </section>
+
+          <section id="contributions-tab" class="tab-panel">
+            <div class="section-heading">
+              <h2>Contributions</h2>
+              <p id="contribution-status">
+                Connectez-vous avec Supabase pour signaler une question, proposer une modification ou soumettre une nouvelle question.
+              </p>
+            </div>
+
+            <div class="data-grid">
+              <article class="data-card contribution-card">
+                <div class="section-heading">
+                  <h3>Question en cours</h3>
+                  <p id="contribution-question-meta">Aucune question active.</p>
+                </div>
+
+                <p id="contribution-question-text" class="contribution-question-text">
+                  Chargez une question pour envoyer un signalement ou proposer une meilleure version.
+                </p>
+
+                <form id="question-feedback-form" class="edit-form">
+                  <label for="question-feedback-type">Type de demande</label>
+                  <select id="question-feedback-type" name="type">
+                    <option value="report">Signaler un probleme</option>
+                    <option value="edit">Proposer une modification</option>
+                  </select>
+
+                  <label for="question-feedback-reason">Explication</label>
+                  <textarea
+                    id="question-feedback-reason"
+                    name="reason"
+                    rows="4"
+                    placeholder="Expliquez le probleme ou la modification a faire"
+                  ></textarea>
+
+                  <div id="feedback-edit-fields" class="contribution-fields is-hidden">
+                    <label for="feedback-prompt">Nouvelle question</label>
+                    <textarea id="feedback-prompt" name="prompt" rows="3"></textarea>
+
+                    <label for="feedback-answer">Bonne reponse</label>
+                    <input id="feedback-answer" name="answer" type="text" />
+
+                    <label for="feedback-aliases">Reponses acceptees supplementaires</label>
+                    <input
+                      id="feedback-aliases"
+                      name="aliases"
+                      type="text"
+                      placeholder="Separer par des virgules"
+                    />
+
+                    <label for="feedback-difficulty">Difficulte</label>
+                    <select id="feedback-difficulty" name="difficulty">
+                      <option value="easy">Facile</option>
+                      <option value="medium">Moyen</option>
+                      <option value="hard">Difficile</option>
+                    </select>
+                  </div>
+
+                  <div class="action-row">
+                    <button id="question-feedback-submit" type="submit" class="primary-button">
+                      Envoyer la demande
+                    </button>
+                  </div>
+                </form>
+              </article>
+
+              <article class="data-card contribution-card">
+                <div class="section-heading">
+                  <h3>Proposer une nouvelle question</h3>
+                  <p>
+                    Envoyez une question complete. Elle apparaitra dans la file admin pour validation.
+                  </p>
+                </div>
+
+                <form id="new-question-form" class="edit-form">
+                  <label for="new-question-prompt">Question</label>
+                  <textarea id="new-question-prompt" name="prompt" rows="3"></textarea>
+
+                  <label for="new-question-answer">Bonne reponse</label>
+                  <input id="new-question-answer" name="answer" type="text" />
+
+                  <label for="new-question-aliases">Reponses acceptees supplementaires</label>
+                  <input
+                    id="new-question-aliases"
+                    name="aliases"
+                    type="text"
+                    placeholder="Separer par des virgules"
+                  />
+
+                  <label for="new-question-difficulty">Difficulte</label>
+                  <select id="new-question-difficulty" name="difficulty">
+                    <option value="easy">Facile</option>
+                    <option value="medium">Moyen</option>
+                    <option value="hard">Difficile</option>
+                  </select>
+
+                  <label for="new-question-reason">Note pour l'admin</label>
+                  <textarea
+                    id="new-question-reason"
+                    name="reason"
+                    rows="4"
+                    placeholder="Contexte, precision ou justification"
+                  ></textarea>
+
+                  <div class="action-row">
+                    <button id="new-question-submit" type="submit" class="primary-button">
+                      Proposer la question
+                    </button>
+                  </div>
+                </form>
+              </article>
+            </div>
           </section>
 
           <section id="leaderboard-tab" class="tab-panel">
@@ -345,6 +466,21 @@
             </div>
 
             <pre id="data-message" class="data-message"></pre>
+          </section>
+
+          <section id="admin-tab" class="tab-panel">
+            <div class="section-heading">
+              <h2>Administration</h2>
+              <p>
+                Validez ou refusez les signalements, les propositions de modifications et les nouvelles questions.
+              </p>
+            </div>
+
+            <article class="data-card admin-card">
+              <div id="admin-request-list" class="request-list">
+                <p class="empty-state">Aucune demande de moderation pour le moment.</p>
+              </div>
+            </article>
           </section>
         </section>
       </main>

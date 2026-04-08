@@ -21865,7 +21865,7 @@
   {
     "id": "the-godfather-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"The Godfather\" et \"The Conversation\" dans la filmographie de Francis Ford Coppola ?",
     "answer": "2",
     "acceptedAnswers": [
       "2"
@@ -21945,7 +21945,7 @@
   {
     "id": "the-godfather-part-ii-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"The Conversation\" et \"The Godfather Part II\" dans la filmographie de Francis Ford Coppola ?",
     "answer": "0",
     "acceptedAnswers": [
       "0"
@@ -22009,7 +22009,7 @@
   {
     "id": "apocalypse-now-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"The Godfather Part II\" et \"Apocalypse Now\" dans la filmographie de Francis Ford Coppola ?",
     "answer": "5",
     "acceptedAnswers": [
       "5"
@@ -22089,7 +22089,7 @@
   {
     "id": "the-conversation-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"The Godfather\" et \"The Conversation\" dans la filmographie de Francis Ford Coppola ?",
     "answer": "2",
     "acceptedAnswers": [
       "2"
@@ -22233,7 +22233,7 @@
   {
     "id": "inception-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"The Dark Knight\" et \"Inception\" dans la filmographie de Christopher Nolan ?",
     "answer": "2",
     "acceptedAnswers": [
       "2"
@@ -22313,7 +22313,7 @@
   {
     "id": "interstellar-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Inception\" et \"Interstellar\" dans la filmographie de Christopher Nolan ?",
     "answer": "4",
     "acceptedAnswers": [
       "4"
@@ -22377,7 +22377,7 @@
   {
     "id": "memento-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Memento\" et \"The Dark Knight\" dans la filmographie de Christopher Nolan ?",
     "answer": "8",
     "acceptedAnswers": [
       "8"
@@ -22457,7 +22457,7 @@
   {
     "id": "dunkirk-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Interstellar\" et \"Dunkirk\" dans la filmographie de Christopher Nolan ?",
     "answer": "3",
     "acceptedAnswers": [
       "3"
@@ -22537,7 +22537,7 @@
   {
     "id": "oppenheimer-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Dunkirk\" et \"Oppenheimer\" dans la filmographie de Christopher Nolan ?",
     "answer": "6",
     "acceptedAnswers": [
       "6"
@@ -22601,7 +22601,7 @@
   {
     "id": "pulp-fiction-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Reservoir Dogs\" et \"Pulp Fiction\" dans la filmographie de Quentin Tarantino ?",
     "answer": "2",
     "acceptedAnswers": [
       "2"
@@ -22681,7 +22681,7 @@
   {
     "id": "reservoir-dogs-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Reservoir Dogs\" et \"Pulp Fiction\" dans la filmographie de Quentin Tarantino ?",
     "answer": "2",
     "acceptedAnswers": [
       "2"
@@ -22761,7 +22761,7 @@
   {
     "id": "kill-bill-vol-1-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Pulp Fiction\" et \"Kill Bill: Vol. 1\" dans la filmographie de Quentin Tarantino ?",
     "answer": "9",
     "acceptedAnswers": [
       "9"
@@ -22825,7 +22825,7 @@
   {
     "id": "django-unchained-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Inglourious Basterds\" et \"Django Unchained\" dans la filmographie de Quentin Tarantino ?",
     "answer": "3",
     "acceptedAnswers": [
       "3"
@@ -22905,7 +22905,7 @@
   {
     "id": "inglourious-basterds-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Kill Bill: Vol. 1\" et \"Inglourious Basterds\" dans la filmographie de Quentin Tarantino ?",
     "answer": "6",
     "acceptedAnswers": [
       "6"
@@ -22985,7 +22985,7 @@
   {
     "id": "once-upon-a-time-in-hollywood-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Django Unchained\" et \"Once Upon a Time in Hollywood\" dans la filmographie de Quentin Tarantino ?",
     "answer": "7",
     "acceptedAnswers": [
       "7"
@@ -23049,7 +23049,7 @@
   {
     "id": "fight-club-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Se7en\" et \"Fight Club\" dans la filmographie de David Fincher ?",
     "answer": "4",
     "acceptedAnswers": [
       "4"
@@ -23129,7 +23129,7 @@
   {
     "id": "se7en-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Se7en\" et \"Fight Club\" dans la filmographie de David Fincher ?",
     "answer": "4",
     "acceptedAnswers": [
       "4"
@@ -23273,7 +23273,7 @@
   {
     "id": "zodiac-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Fight Club\" et \"Zodiac\" dans la filmographie de David Fincher ?",
     "answer": "8",
     "acceptedAnswers": [
       "8"
@@ -23353,7 +23353,7 @@
   {
     "id": "the-social-network-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Zodiac\" et \"The Social Network\" dans la filmographie de David Fincher ?",
     "answer": "3",
     "acceptedAnswers": [
       "3"
@@ -23417,7 +23417,7 @@
   {
     "id": "forrest-gump-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Back to the Future\" et \"Forrest Gump\" dans la filmographie de Robert Zemeckis ?",
     "answer": "9",
     "acceptedAnswers": [
       "9"
@@ -23497,7 +23497,7 @@
   {
     "id": "back-to-the-future-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Back to the Future\" et \"Forrest Gump\" dans la filmographie de Robert Zemeckis ?",
     "answer": "9",
     "acceptedAnswers": [
       "9"
@@ -23577,7 +23577,7 @@
   {
     "id": "saving-private-ryan-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Schindler's List\" et \"Saving Private Ryan\" dans la filmographie de Steven Spielberg ?",
     "answer": "5",
     "acceptedAnswers": [
       "5"
@@ -23641,7 +23641,7 @@
   {
     "id": "schindlers-list-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Jurassic Park\" et \"Schindler's List\" dans la filmographie de Steven Spielberg ?",
     "answer": "0",
     "acceptedAnswers": [
       "0"
@@ -23721,7 +23721,7 @@
   {
     "id": "jurassic-park-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Indiana Jones and the Last Crusade\" et \"Jurassic Park\" dans la filmographie de Steven Spielberg ?",
     "answer": "4",
     "acceptedAnswers": [
       "4"
@@ -23801,7 +23801,7 @@
   {
     "id": "jaws-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Jaws\" et \"Raiders of the Lost Ark\" dans la filmographie de Steven Spielberg ?",
     "answer": "6",
     "acceptedAnswers": [
       "6"
@@ -23865,7 +23865,7 @@
   {
     "id": "e-t-the-extra-terrestrial-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Raiders of the Lost Ark\" et \"E.T. the Extra-Terrestrial\" dans la filmographie de Steven Spielberg ?",
     "answer": "1",
     "acceptedAnswers": [
       "1"
@@ -23945,7 +23945,7 @@
   {
     "id": "raiders-of-the-lost-ark-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Jaws\" et \"Raiders of the Lost Ark\" dans la filmographie de Steven Spielberg ?",
     "answer": "6",
     "acceptedAnswers": [
       "6"
@@ -24025,7 +24025,7 @@
   {
     "id": "indiana-jones-and-the-last-crusade-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"E.T. the Extra-Terrestrial\" et \"Indiana Jones and the Last Crusade\" dans la filmographie de Steven Spielberg ?",
     "answer": "7",
     "acceptedAnswers": [
       "7"
@@ -24089,7 +24089,7 @@
   {
     "id": "titanic-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Terminator 2: Judgment Day\" et \"Titanic\" dans la filmographie de James Cameron ?",
     "answer": "6",
     "acceptedAnswers": [
       "6"
@@ -24169,7 +24169,7 @@
   {
     "id": "avatar-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Titanic\" et \"Avatar\" dans la filmographie de James Cameron ?",
     "answer": "12",
     "acceptedAnswers": [
       "12"
@@ -24313,7 +24313,7 @@
   {
     "id": "aliens-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Aliens\" et \"The Abyss\" dans la filmographie de James Cameron ?",
     "answer": "3",
     "acceptedAnswers": [
       "3"
@@ -24393,7 +24393,7 @@
   {
     "id": "the-abyss-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Aliens\" et \"The Abyss\" dans la filmographie de James Cameron ?",
     "answer": "3",
     "acceptedAnswers": [
       "3"
@@ -24457,7 +24457,7 @@
   {
     "id": "gladiator-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Thelma and Louise\" et \"Gladiator\" dans la filmographie de Ridley Scott ?",
     "answer": "9",
     "acceptedAnswers": [
       "9"
@@ -24537,7 +24537,7 @@
   {
     "id": "blade-runner-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Alien\" et \"Blade Runner\" dans la filmographie de Ridley Scott ?",
     "answer": "3",
     "acceptedAnswers": [
       "3"
@@ -24617,7 +24617,7 @@
   {
     "id": "alien-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Alien\" et \"Blade Runner\" dans la filmographie de Ridley Scott ?",
     "answer": "3",
     "acceptedAnswers": [
       "3"
@@ -24681,7 +24681,7 @@
   {
     "id": "the-martian-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Gladiator\" et \"The Martian\" dans la filmographie de Ridley Scott ?",
     "answer": "15",
     "acceptedAnswers": [
       "15"
@@ -24761,7 +24761,7 @@
   {
     "id": "thelma-and-louise-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Blade Runner\" et \"Thelma and Louise\" dans la filmographie de Ridley Scott ?",
     "answer": "9",
     "acceptedAnswers": [
       "9"
@@ -24907,7 +24907,7 @@
   {
     "id": "the-departed-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Goodfellas\" et \"The Departed\" dans la filmographie de Martin Scorsese ?",
     "answer": "16",
     "acceptedAnswers": [
       "16"
@@ -24987,7 +24987,7 @@
   {
     "id": "goodfellas-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Raging Bull\" et \"Goodfellas\" dans la filmographie de Martin Scorsese ?",
     "answer": "10",
     "acceptedAnswers": [
       "10"
@@ -25067,7 +25067,7 @@
   {
     "id": "taxi-driver-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Taxi Driver\" et \"Raging Bull\" dans la filmographie de Martin Scorsese ?",
     "answer": "4",
     "acceptedAnswers": [
       "4"
@@ -25131,7 +25131,7 @@
   {
     "id": "raging-bull-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Taxi Driver\" et \"Raging Bull\" dans la filmographie de Martin Scorsese ?",
     "answer": "4",
     "acceptedAnswers": [
       "4"
@@ -25211,7 +25211,7 @@
   {
     "id": "the-wolf-of-wall-street-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Shutter Island\" et \"The Wolf of Wall Street\" dans la filmographie de Martin Scorsese ?",
     "answer": "3",
     "acceptedAnswers": [
       "3"
@@ -25355,7 +25355,7 @@
   {
     "id": "the-shawshank-redemption-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"The Shawshank Redemption\" et \"The Green Mile\" dans la filmographie de Frank Darabont ?",
     "answer": "5",
     "acceptedAnswers": [
       "5"
@@ -25435,7 +25435,7 @@
   {
     "id": "the-green-mile-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"The Shawshank Redemption\" et \"The Green Mile\" dans la filmographie de Frank Darabont ?",
     "answer": "5",
     "acceptedAnswers": [
       "5"
@@ -25499,7 +25499,7 @@
   {
     "id": "american-beauty-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"American Beauty\" et \"Skyfall\" dans la filmographie de Sam Mendes ?",
     "answer": "13",
     "acceptedAnswers": [
       "13"
@@ -25579,7 +25579,7 @@
   {
     "id": "skyfall-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"American Beauty\" et \"Skyfall\" dans la filmographie de Sam Mendes ?",
     "answer": "13",
     "acceptedAnswers": [
       "13"
@@ -25659,7 +25659,7 @@
   {
     "id": "whiplash-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Whiplash\" et \"La La Land\" dans la filmographie de Damien Chazelle ?",
     "answer": "2",
     "acceptedAnswers": [
       "2"
@@ -25723,7 +25723,7 @@
   {
     "id": "la-la-land-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Whiplash\" et \"La La Land\" dans la filmographie de Damien Chazelle ?",
     "answer": "2",
     "acceptedAnswers": [
       "2"
@@ -25803,7 +25803,7 @@
   {
     "id": "babylon-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"La La Land\" et \"Babylon\" dans la filmographie de Damien Chazelle ?",
     "answer": "6",
     "acceptedAnswers": [
       "6"
@@ -25883,7 +25883,7 @@
   {
     "id": "parasite-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Mother\" et \"Parasite\" dans la filmographie de Bong Joon-ho ?",
     "answer": "10",
     "acceptedAnswers": [
       "10"
@@ -25947,7 +25947,7 @@
   {
     "id": "memories-of-murder-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Memories of Murder\" et \"The Host\" dans la filmographie de Bong Joon-ho ?",
     "answer": "3",
     "acceptedAnswers": [
       "3"
@@ -26027,7 +26027,7 @@
   {
     "id": "mother-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"The Host\" et \"Mother\" dans la filmographie de Bong Joon-ho ?",
     "answer": "3",
     "acceptedAnswers": [
       "3"
@@ -26107,7 +26107,7 @@
   {
     "id": "the-host-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Memories of Murder\" et \"The Host\" dans la filmographie de Bong Joon-ho ?",
     "answer": "3",
     "acceptedAnswers": [
       "3"
@@ -26171,7 +26171,7 @@
   {
     "id": "oldboy-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Oldboy\" et \"The Handmaiden\" dans la filmographie de Park Chan-wook ?",
     "answer": "13",
     "acceptedAnswers": [
       "13"
@@ -26251,7 +26251,7 @@
   {
     "id": "the-handmaiden-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Oldboy\" et \"The Handmaiden\" dans la filmographie de Park Chan-wook ?",
     "answer": "13",
     "acceptedAnswers": [
       "13"
@@ -26395,7 +26395,7 @@
   {
     "id": "spirited-away-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Princess Mononoke\" et \"Spirited Away\" dans la filmographie de Hayao Miyazaki ?",
     "answer": "4",
     "acceptedAnswers": [
       "4"
@@ -26475,7 +26475,7 @@
   {
     "id": "princess-mononoke-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"My Neighbor Totoro\" et \"Princess Mononoke\" dans la filmographie de Hayao Miyazaki ?",
     "answer": "9",
     "acceptedAnswers": [
       "9"
@@ -26539,7 +26539,7 @@
   {
     "id": "my-neighbor-totoro-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"My Neighbor Totoro\" et \"Princess Mononoke\" dans la filmographie de Hayao Miyazaki ?",
     "answer": "9",
     "acceptedAnswers": [
       "9"
@@ -26619,7 +26619,7 @@
   {
     "id": "howls-moving-castle-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Spirited Away\" et \"Howl's Moving Castle\" dans la filmographie de Hayao Miyazaki ?",
     "answer": "3",
     "acceptedAnswers": [
       "3"
@@ -26765,7 +26765,7 @@
   {
     "id": "seven-samurai-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Ikiru\" et \"Seven Samurai\" dans la filmographie de Akira Kurosawa ?",
     "answer": "2",
     "acceptedAnswers": [
       "2"
@@ -26845,7 +26845,7 @@
   {
     "id": "rashomon-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Rashomon\" et \"Ikiru\" dans la filmographie de Akira Kurosawa ?",
     "answer": "2",
     "acceptedAnswers": [
       "2"
@@ -26925,7 +26925,7 @@
   {
     "id": "ikiru-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Rashomon\" et \"Ikiru\" dans la filmographie de Akira Kurosawa ?",
     "answer": "2",
     "acceptedAnswers": [
       "2"
@@ -26989,7 +26989,7 @@
   {
     "id": "high-and-low-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Yojimbo\" et \"High and Low\" dans la filmographie de Akira Kurosawa ?",
     "answer": "2",
     "acceptedAnswers": [
       "2"
@@ -27069,7 +27069,7 @@
   {
     "id": "yojimbo-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Seven Samurai\" et \"Yojimbo\" dans la filmographie de Akira Kurosawa ?",
     "answer": "7",
     "acceptedAnswers": [
       "7"
@@ -27149,7 +27149,7 @@
   {
     "id": "the-seventh-seal-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"The Seventh Seal\" et \"Wild Strawberries\" dans la filmographie de Ingmar Bergman ?",
     "answer": "0",
     "acceptedAnswers": [
       "0"
@@ -27213,7 +27213,7 @@
   {
     "id": "persona-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Wild Strawberries\" et \"Persona\" dans la filmographie de Ingmar Bergman ?",
     "answer": "9",
     "acceptedAnswers": [
       "9"
@@ -27293,7 +27293,7 @@
   {
     "id": "wild-strawberries-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"The Seventh Seal\" et \"Wild Strawberries\" dans la filmographie de Ingmar Bergman ?",
     "answer": "0",
     "acceptedAnswers": [
       "0"
@@ -27437,7 +27437,7 @@
   {
     "id": "8-1-2-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"La Dolce Vita\" et \"8 1/2\" dans la filmographie de Federico Fellini ?",
     "answer": "3",
     "acceptedAnswers": [
       "3"
@@ -27517,7 +27517,7 @@
   {
     "id": "la-dolce-vita-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"La Dolce Vita\" et \"8 1/2\" dans la filmographie de Federico Fellini ?",
     "answer": "3",
     "acceptedAnswers": [
       "3"
@@ -27581,7 +27581,7 @@
   {
     "id": "amarcord-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"8 1/2\" et \"Amarcord\" dans la filmographie de Federico Fellini ?",
     "answer": "10",
     "acceptedAnswers": [
       "10"
@@ -27891,7 +27891,7 @@
   {
     "id": "the-good-the-bad-and-the-ugly-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"The Good, the Bad and the Ugly\" et \"Once Upon a Time in the West\" dans la filmographie de Sergio Leone ?",
     "answer": "2",
     "acceptedAnswers": [
       "2"
@@ -27971,7 +27971,7 @@
   {
     "id": "once-upon-a-time-in-the-west-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"The Good, the Bad and the Ugly\" et \"Once Upon a Time in the West\" dans la filmographie de Sergio Leone ?",
     "answer": "2",
     "acceptedAnswers": [
       "2"
@@ -28035,7 +28035,7 @@
   {
     "id": "once-upon-a-time-in-america-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Once Upon a Time in the West\" et \"Once Upon a Time in America\" dans la filmographie de Sergio Leone ?",
     "answer": "16",
     "acceptedAnswers": [
       "16"
@@ -28115,7 +28115,7 @@
   {
     "id": "pans-labyrinth-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Pan's Labyrinth\" et \"Crimson Peak\" dans la filmographie de Guillermo del Toro ?",
     "answer": "9",
     "acceptedAnswers": [
       "9"
@@ -28195,7 +28195,7 @@
   {
     "id": "the-shape-of-water-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Crimson Peak\" et \"The Shape of Water\" dans la filmographie de Guillermo del Toro ?",
     "answer": "2",
     "acceptedAnswers": [
       "2"
@@ -28259,7 +28259,7 @@
   {
     "id": "crimson-peak-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Pan's Labyrinth\" et \"Crimson Peak\" dans la filmographie de Guillermo del Toro ?",
     "answer": "9",
     "acceptedAnswers": [
       "9"
@@ -28339,7 +28339,7 @@
   {
     "id": "children-of-men-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Harry Potter and the Prisoner of Azkaban\" et \"Children of Men\" dans la filmographie de Alfonso Cuaron ?",
     "answer": "2",
     "acceptedAnswers": [
       "2"
@@ -28483,7 +28483,7 @@
   {
     "id": "y-tu-mama-tambien-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Y Tu Mama Tambien\" et \"Harry Potter and the Prisoner of Azkaban\" dans la filmographie de Alfonso Cuaron ?",
     "answer": "3",
     "acceptedAnswers": [
       "3"
@@ -28563,7 +28563,7 @@
   {
     "id": "roma-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Gravity\" et \"Roma\" dans la filmographie de Alfonso Cuaron ?",
     "answer": "5",
     "acceptedAnswers": [
       "5"
@@ -28627,7 +28627,7 @@
   {
     "id": "harry-potter-and-the-prisoner-of-azkaban-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Y Tu Mama Tambien\" et \"Harry Potter and the Prisoner of Azkaban\" dans la filmographie de Alfonso Cuaron ?",
     "answer": "3",
     "acceptedAnswers": [
       "3"
@@ -28707,7 +28707,7 @@
   {
     "id": "the-400-blows-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"The 400 Blows\" et \"Day for Night\" dans la filmographie de Francois Truffaut ?",
     "answer": "14",
     "acceptedAnswers": [
       "14"
@@ -28787,7 +28787,7 @@
   {
     "id": "day-for-night-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"The 400 Blows\" et \"Day for Night\" dans la filmographie de Francois Truffaut ?",
     "answer": "14",
     "acceptedAnswers": [
       "14"
@@ -28851,7 +28851,7 @@
   {
     "id": "breathless-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Breathless\" et \"Contempt\" dans la filmographie de Jean-Luc Godard ?",
     "answer": "3",
     "acceptedAnswers": [
       "3"
@@ -28931,7 +28931,7 @@
   {
     "id": "contempt-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Breathless\" et \"Contempt\" dans la filmographie de Jean-Luc Godard ?",
     "answer": "3",
     "acceptedAnswers": [
       "3"
@@ -29012,7 +29012,7 @@
   {
     "id": "amelie-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Delicatessen\" et \"Amelie\" dans la filmographie de Jean-Pierre Jeunet ?",
     "answer": "10",
     "acceptedAnswers": [
       "10"
@@ -29076,7 +29076,7 @@
   {
     "id": "delicatessen-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Delicatessen\" et \"Amelie\" dans la filmographie de Jean-Pierre Jeunet ?",
     "answer": "10",
     "acceptedAnswers": [
       "10"
@@ -29763,7 +29763,7 @@
   {
     "id": "crouching-tiger-hidden-dragon-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Crouching Tiger, Hidden Dragon\" et \"Brokeback Mountain\" dans la filmographie de Ang Lee ?",
     "answer": "5",
     "acceptedAnswers": [
       "5"
@@ -29843,7 +29843,7 @@
   {
     "id": "brokeback-mountain-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Crouching Tiger, Hidden Dragon\" et \"Brokeback Mountain\" dans la filmographie de Ang Lee ?",
     "answer": "5",
     "acceptedAnswers": [
       "5"
@@ -29907,7 +29907,7 @@
   {
     "id": "life-of-pi-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Brokeback Mountain\" et \"Life of Pi\" dans la filmographie de Ang Lee ?",
     "answer": "7",
     "acceptedAnswers": [
       "7"
@@ -29987,7 +29987,7 @@
   {
     "id": "in-the-mood-for-love-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Fallen Angels\" et \"In the Mood for Love\" dans la filmographie de Wong Kar-wai ?",
     "answer": "5",
     "acceptedAnswers": [
       "5"
@@ -30067,7 +30067,7 @@
   {
     "id": "chungking-express-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Chungking Express\" et \"Fallen Angels\" dans la filmographie de Wong Kar-wai ?",
     "answer": "1",
     "acceptedAnswers": [
       "1"
@@ -30131,7 +30131,7 @@
   {
     "id": "fallen-angels-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Chungking Express\" et \"Fallen Angels\" dans la filmographie de Wong Kar-wai ?",
     "answer": "1",
     "acceptedAnswers": [
       "1"
@@ -30211,7 +30211,7 @@
   {
     "id": "hero-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Raise the Red Lantern\" et \"Hero\" dans la filmographie de Zhang Yimou ?",
     "answer": "11",
     "acceptedAnswers": [
       "11"
@@ -30291,7 +30291,7 @@
   {
     "id": "raise-the-red-lantern-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Raise the Red Lantern\" et \"Hero\" dans la filmographie de Zhang Yimou ?",
     "answer": "11",
     "acceptedAnswers": [
       "11"
@@ -30437,7 +30437,7 @@
   {
     "id": "a-separation-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"A Separation\" et \"The Salesman\" dans la filmographie de Asghar Farhadi ?",
     "answer": "5",
     "acceptedAnswers": [
       "5"
@@ -30581,7 +30581,7 @@
   {
     "id": "close-up-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Close-Up\" et \"Taste of Cherry\" dans la filmographie de Abbas Kiarostami ?",
     "answer": "7",
     "acceptedAnswers": [
       "7"
@@ -30661,7 +30661,7 @@
   {
     "id": "taste-of-cherry-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Close-Up\" et \"Taste of Cherry\" dans la filmographie de Abbas Kiarostami ?",
     "answer": "7",
     "acceptedAnswers": [
       "7"
@@ -31119,7 +31119,7 @@
   {
     "id": "metropolis-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Metropolis\" et \"M\" dans la filmographie de Fritz Lang ?",
     "answer": "4",
     "acceptedAnswers": [
       "4"
@@ -31183,7 +31183,7 @@
   {
     "id": "m-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Metropolis\" et \"M\" dans la filmographie de Fritz Lang ?",
     "answer": "4",
     "acceptedAnswers": [
       "4"
@@ -31491,7 +31491,7 @@
   {
     "id": "lawrence-of-arabia-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Lawrence of Arabia\" et \"Doctor Zhivago\" dans la filmographie de David Lean ?",
     "answer": "3",
     "acceptedAnswers": [
       "3"
@@ -31635,7 +31635,7 @@
   {
     "id": "2001-a-space-odyssey-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Paths of Glory\" et \"2001: A Space Odyssey\" dans la filmographie de Stanley Kubrick ?",
     "answer": "11",
     "acceptedAnswers": [
       "11"
@@ -31715,7 +31715,7 @@
   {
     "id": "a-clockwork-orange-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"2001: A Space Odyssey\" et \"A Clockwork Orange\" dans la filmographie de Stanley Kubrick ?",
     "answer": "3",
     "acceptedAnswers": [
       "3"
@@ -31779,7 +31779,7 @@
   {
     "id": "the-shining-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"A Clockwork Orange\" et \"The Shining\" dans la filmographie de Stanley Kubrick ?",
     "answer": "9",
     "acceptedAnswers": [
       "9"
@@ -31859,7 +31859,7 @@
   {
     "id": "full-metal-jacket-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"The Shining\" et \"Full Metal Jacket\" dans la filmographie de Stanley Kubrick ?",
     "answer": "7",
     "acceptedAnswers": [
       "7"
@@ -31939,7 +31939,7 @@
   {
     "id": "paths-of-glory-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Paths of Glory\" et \"2001: A Space Odyssey\" dans la filmographie de Stanley Kubrick ?",
     "answer": "11",
     "acceptedAnswers": [
       "11"
@@ -32085,7 +32085,7 @@
   {
     "id": "arrival-hard-gap-number-between-neighbors",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Sicario\" et \"Arrival\" dans la filmographie de Denis Villeneuve ?",
     "answer": "1",
     "acceptedAnswers": [
       "1"
@@ -32165,7 +32165,7 @@
   {
     "id": "dune-hard-gap-number-after-previous",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{previous_movie[\"title\"]}\" et \"{title}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Arrival\" et \"Dune\" dans la filmographie de Denis Villeneuve ?",
     "answer": "5",
     "acceptedAnswers": [
       "5"
@@ -32229,7 +32229,7 @@
   {
     "id": "sicario-hard-gap-number-before-next",
     "difficulty": "hard",
-    "prompt": "Combien dannees separent \"{title}\" et \"{next_movie[\"title\"]}\" dans la filmographie de {director} ?",
+    "prompt": "Combien d'annees separent \"Sicario\" et \"Arrival\" dans la filmographie de Denis Villeneuve ?",
     "answer": "1",
     "acceptedAnswers": [
       "1"

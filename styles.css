@@ -486,6 +486,8 @@ button {
 
 .question-actions {
   display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
   justify-content: flex-end;
   margin-top: 14px;
 }
@@ -585,6 +587,98 @@ button {
 
 .danger-button {
   color: var(--danger);
+}
+
+.contribution-card,
+.admin-card {
+  min-height: 100%;
+}
+
+.contribution-question-text {
+  margin: 0 0 18px;
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 2vw, 2rem);
+  line-height: 1.1;
+}
+
+.contribution-fields {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid rgba(78, 48, 19, 0.12);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 251, 246, 0.7);
+}
+
+.request-list {
+  display: grid;
+  gap: 16px;
+}
+
+.request-card {
+  padding: 18px;
+  border: 1px solid rgba(78, 48, 19, 0.12);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 251, 246, 0.8);
+}
+
+.request-topline {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.request-topline h3 {
+  margin: 8px 0 0;
+  font-size: 1.1rem;
+}
+
+.request-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+}
+
+.request-status-approved {
+  background: rgba(24, 121, 78, 0.14);
+  color: var(--success);
+}
+
+.request-status-rejected {
+  background: rgba(148, 37, 37, 0.12);
+  color: var(--danger);
+}
+
+.request-status-pending {
+  background: rgba(191, 75, 40, 0.16);
+  color: var(--accent-dark);
+}
+
+.request-meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.request-body {
+  display: grid;
+  gap: 8px;
+}
+
+.request-body p {
+  margin: 0;
+}
+
+.request-actions {
+  margin-top: 16px;
+}
+
+.empty-state {
+  margin: 0;
+  color: var(--muted);
 }
 
 @keyframes fade-in {

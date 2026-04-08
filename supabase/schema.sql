@@ -12,10 +12,30 @@ create table if not exists public.questions (
 create table if not exists public.profiles (
   user_id uuid primary key references auth.users(id) on delete cascade,
   nickname text not null check (char_length(trim(nickname)) between 3 and 24),
+  is_admin boolean not null default false,
   total_answered integer not null default 0,
   total_correct integer not null default 0,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
+);
+
+create table if not exists public.question_moderation_requests (
+  id uuid primary key default gen_random_uuid(),
+  requester_user_id uuid not null references auth.users(id) on delete cascade,
+  requester_nickname text not null check (char_length(trim(requester_nickname)) between 3 and 24),
+  question_id text references public.questions(id) on delete set null,
+  request_type text not null check (request_type in ('report', 'edit', 'new')),
+  status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
+  reason text not null default '',
+  proposed_prompt text,
+  proposed_answer text,
+  proposed_accepted_answers jsonb not null default '[]'::jsonb,
+  proposed_difficulty text check (proposed_difficulty in ('easy', 'medium', 'hard')),
+  question_snapshot jsonb not null default '{}'::jsonb,
+  admin_note text,
+  reviewed_by uuid references auth.users(id) on delete set null,
+  reviewed_at timestamptz,
+  created_at timestamptz not null default timezone('utc', now())
 );
 
 create table if not exists public.user_question_progress (
@@ -34,10 +54,21 @@ create index if not exists user_question_progress_user_id_idx
 create index if not exists questions_difficulty_is_active_idx
   on public.questions (difficulty, is_active);
 
+create index if not exists question_moderation_requests_status_idx
+  on public.question_moderation_requests (status, created_at desc);
+
+create index if not exists question_moderation_requests_requester_idx
+  on public.question_moderation_requests (requester_user_id, created_at desc);
+
+create index if not exists question_moderation_requests_question_idx
+  on public.question_moderation_requests (question_id);
+
 grant usage on schema public to anon, authenticated;
 grant select on public.questions to anon, authenticated;
+grant insert, update on public.questions to authenticated;
 grant select, insert, update on public.profiles to authenticated;
 grant select, insert, update on public.user_question_progress to authenticated;
+grant select, insert, update on public.question_moderation_requests to authenticated;
 
 create or replace function public.touch_updated_at()
 returns trigger
@@ -47,6 +78,21 @@ begin
   new.updated_at = timezone('utc', now());
   return new;
 end;
+$$;
+
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.profiles
+    where user_id = auth.uid()
+      and is_admin = true
+  );
 $$;
 
 drop trigger if exists profiles_touch_updated_at on public.profiles;
@@ -59,6 +105,7 @@ execute procedure public.touch_updated_at();
 alter table public.profiles enable row level security;
 alter table public.user_question_progress enable row level security;
 alter table public.questions enable row level security;
+alter table public.question_moderation_requests enable row level security;
 
 drop policy if exists "questions_select_public" on public.questions;
 create policy "questions_select_public"
@@ -66,6 +113,28 @@ on public.questions
 for select
 to anon, authenticated
 using (is_active = true);
+
+drop policy if exists "questions_select_admin" on public.questions;
+create policy "questions_select_admin"
+on public.questions
+for select
+to authenticated
+using (public.is_admin());
+
+drop policy if exists "questions_insert_admin" on public.questions;
+create policy "questions_insert_admin"
+on public.questions
+for insert
+to authenticated
+with check (public.is_admin());
+
+drop policy if exists "questions_update_admin" on public.questions;
+create policy "questions_update_admin"
+on public.questions
+for update
+to authenticated
+using (public.is_admin())
+with check (public.is_admin());
 
 drop policy if exists "profiles_select_for_authenticated" on public.profiles;
 create policy "profiles_select_for_authenticated"
@@ -110,6 +179,40 @@ for update
 to authenticated
 using (auth.uid() = user_id)
 with check (auth.uid() = user_id);
+
+drop policy if exists "moderation_requests_select_own" on public.question_moderation_requests;
+create policy "moderation_requests_select_own"
+on public.question_moderation_requests
+for select
+to authenticated
+using (auth.uid() = requester_user_id);
+
+drop policy if exists "moderation_requests_select_admin" on public.question_moderation_requests;
+create policy "moderation_requests_select_admin"
+on public.question_moderation_requests
+for select
+to authenticated
+using (public.is_admin());
+
+drop policy if exists "moderation_requests_insert_own" on public.question_moderation_requests;
+create policy "moderation_requests_insert_own"
+on public.question_moderation_requests
+for insert
+to authenticated
+with check (
+  auth.uid() = requester_user_id
+  and status = 'pending'
+  and reviewed_by is null
+  and reviewed_at is null
+);
+
+drop policy if exists "moderation_requests_update_admin" on public.question_moderation_requests;
+create policy "moderation_requests_update_admin"
+on public.question_moderation_requests
+for update
+to authenticated
+using (public.is_admin())
+with check (public.is_admin());
 
 create or replace function public.register_answer(
   p_question_id text,
