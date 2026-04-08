@@ -231,6 +231,48 @@ export class SupabaseGameRepository {
 
     const { error } = await this.client.from("question_moderation_requests").insert(payload);
 
+    if (error && isMissingModerationMetadataColumn(error)) {
+      const isMcqEdit =
+        type === "edit" &&
+        (
+          proposedMetadata?.answerMode === "mcq" ||
+          (Array.isArray(proposedMetadata?.distractors) && proposedMetadata.distractors.length > 0)
+        );
+
+      if (isMcqEdit) {
+        throw new Error(
+          "La base Supabase n'a pas encore la colonne proposed_metadata. Appliquez admin_moderation.sql avant d'envoyer une modification de QCM."
+        );
+      }
+
+      const fallbackPayload = {
+        requester_user_id: this.userId,
+        requester_nickname: this.profile?.nickname ?? "Spectateur",
+        question_id: questionId,
+        request_type: type,
+        reason: reason.trim(),
+        question_snapshot: questionSnapshot ?? {}
+      };
+
+      if (type === "edit") {
+        fallbackPayload.proposed_prompt = proposedPrompt.trim();
+        fallbackPayload.proposed_answer = proposedAnswer.trim();
+        fallbackPayload.proposed_accepted_answers = sanitizeAnswerList(
+          proposedAnswer,
+          proposedAcceptedAnswers
+        );
+        fallbackPayload.proposed_difficulty = proposedDifficulty;
+      }
+
+      const fallback = await this.client.from("question_moderation_requests").insert(fallbackPayload);
+
+      if (fallback.error) {
+        throw new Error(`Envoi de la demande impossible: ${fallback.error.message}`);
+      }
+
+      return;
+    }
+
     if (error) {
       throw new Error(`Envoi de la demande impossible: ${error.message}`);
     }
