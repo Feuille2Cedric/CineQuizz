@@ -1,1 +1,356 @@
-[]
+[
+  {
+    "id": "manual-the-godfather-easy-corleone",
+    "difficulty": "easy",
+    "prompt": "Quel film suit l'ascension de la famille mafieuse Corleone a New York ?",
+    "answer": "The Godfather",
+    "acceptedAnswers": ["The Godfather", "Le Parrain"],
+    "metadata": { "source": "manual", "movieId": "the-godfather", "title": "The Godfather", "template": "manual-story-title" }
+  },
+  {
+    "id": "manual-jaws-easy-shark",
+    "difficulty": "easy",
+    "prompt": "Quel film met en scene un requin geant qui terrorise une station balneaire ?",
+    "answer": "Jaws",
+    "acceptedAnswers": ["Jaws", "Les Dents de la mer"],
+    "metadata": { "source": "manual", "movieId": "jaws", "title": "Jaws", "template": "manual-story-title" }
+  },
+  {
+    "id": "manual-jurassic-park-easy-dinosaurs",
+    "difficulty": "easy",
+    "prompt": "Quel film raconte l'ouverture d'un parc peuple de dinosaures clones qui tourne mal ?",
+    "answer": "Jurassic Park",
+    "acceptedAnswers": ["Jurassic Park"],
+    "metadata": { "source": "manual", "movieId": "jurassic-park", "title": "Jurassic Park", "template": "manual-story-title" }
+  },
+  {
+    "id": "manual-titanic-easy-liner",
+    "difficulty": "easy",
+    "prompt": "Quel film suit une histoire d'amour a bord d'un paquebot promis au naufrage ?",
+    "answer": "Titanic",
+    "acceptedAnswers": ["Titanic"],
+    "metadata": { "source": "manual", "movieId": "titanic", "title": "Titanic", "template": "manual-story-title" }
+  },
+  {
+    "id": "manual-the-social-network-easy-facebook",
+    "difficulty": "easy",
+    "prompt": "Quel film raconte la creation de Facebook et les conflits entre ses fondateurs ?",
+    "answer": "The Social Network",
+    "acceptedAnswers": ["The Social Network"],
+    "metadata": { "source": "manual", "movieId": "the-social-network", "title": "The Social Network", "template": "manual-story-title" }
+  },
+  {
+    "id": "manual-parasite-easy-infiltration",
+    "difficulty": "easy",
+    "prompt": "Quel film suit une famille modeste qui s'infiltre peu a peu dans la maison d'une famille riche ?",
+    "answer": "Parasite",
+    "acceptedAnswers": ["Parasite"],
+    "metadata": { "source": "manual", "movieId": "parasite", "title": "Parasite", "template": "manual-story-title" }
+  },
+  {
+    "id": "manual-spirited-away-easy-spirit-world",
+    "difficulty": "easy",
+    "prompt": "Quel film montre une jeune fille perdue dans un monde d'esprits apres la transformation de ses parents en cochons ?",
+    "answer": "Spirited Away",
+    "acceptedAnswers": ["Spirited Away", "Le Voyage de Chihiro"],
+    "metadata": { "source": "manual", "movieId": "spirited-away", "title": "Spirited Away", "template": "manual-story-title" }
+  },
+  {
+    "id": "manual-amelie-easy-montmartre",
+    "difficulty": "easy",
+    "prompt": "Quel film suit une serveuse timide de Montmartre qui decide d'ameliorer la vie des autres en secret ?",
+    "answer": "Amelie",
+    "acceptedAnswers": ["Amelie", "Le Fabuleux Destin d'Amelie Poulain"],
+    "metadata": { "source": "manual", "movieId": "amelie", "title": "Amelie", "template": "manual-story-title" }
+  },
+  {
+    "id": "manual-city-of-god-easy-favela",
+    "difficulty": "easy",
+    "prompt": "Quel film suit des adolescents pris dans la violence des gangs d'une favela de Rio ?",
+    "answer": "City of God",
+    "acceptedAnswers": ["City of God", "La Cite de Dieu"],
+    "metadata": { "source": "manual", "movieId": "city-of-god", "title": "City of God", "template": "manual-story-title" }
+  },
+  {
+    "id": "manual-children-of-men-easy-infertility",
+    "difficulty": "easy",
+    "prompt": "Quel film se deroule dans un monde ou plus aucun enfant ne nait depuis des annees ?",
+    "answer": "Children of Men",
+    "acceptedAnswers": ["Children of Men", "Les Fils de l'homme"],
+    "metadata": { "source": "manual", "movieId": "children-of-men", "title": "Children of Men", "template": "manual-story-title" }
+  },
+  {
+    "id": "manual-arrival-easy-first-contact",
+    "difficulty": "easy",
+    "prompt": "Quel film de premier contact met en avant une linguiste face a des signes circulaires extraterrestres ?",
+    "answer": "Arrival",
+    "acceptedAnswers": ["Arrival", "Premier Contact"],
+    "metadata": { "source": "manual", "movieId": "arrival", "title": "Arrival", "template": "manual-story-title" }
+  },
+  {
+    "id": "manual-dune-easy-arrakis",
+    "difficulty": "easy",
+    "prompt": "Quel film suit Paul Atreides sur Arrakis, planete desertique liee a l'epice ?",
+    "answer": "Dune",
+    "acceptedAnswers": ["Dune"],
+    "metadata": { "source": "manual", "movieId": "dune", "title": "Dune", "template": "manual-story-title" }
+  },
+  {
+    "id": "manual-la-haine-easy-banlieue",
+    "difficulty": "easy",
+    "prompt": "Quel film suit pendant une journee trois jeunes apres des emeutes en banlieue parisienne ?",
+    "answer": "La Haine",
+    "acceptedAnswers": ["La Haine"],
+    "metadata": { "source": "manual", "movieId": "la-haine", "title": "La Haine", "template": "manual-story-title" }
+  },
+  {
+    "id": "manual-life-is-beautiful-easy-game",
+    "difficulty": "easy",
+    "prompt": "Quel film montre un pere qui transforme l'horreur d'un camp en jeu imaginaire pour proteger son fils ?",
+    "answer": "Life Is Beautiful",
+    "acceptedAnswers": ["Life Is Beautiful", "La vie est belle"],
+    "metadata": { "source": "manual", "movieId": "life-is-beautiful", "title": "Life Is Beautiful", "template": "manual-story-title" }
+  },
+
+  {
+    "id": "manual-the-godfather-medium-family-name",
+    "difficulty": "medium",
+    "prompt": "Quel est le nom de la famille mafieuse au centre de \"The Godfather\" ?",
+    "answer": "Corleone",
+    "acceptedAnswers": ["Corleone", "la famille Corleone"],
+    "metadata": { "source": "manual", "movieId": "the-godfather", "title": "The Godfather", "template": "manual-story-detail" }
+  },
+  {
+    "id": "manual-apocalypse-now-medium-kurtz",
+    "difficulty": "medium",
+    "prompt": "Quel officier renegat le capitaine Willard doit-il retrouver dans \"Apocalypse Now\" ?",
+    "answer": "Kurtz",
+    "acceptedAnswers": ["Kurtz", "Colonel Kurtz", "le colonel Kurtz"],
+    "metadata": { "source": "manual", "movieId": "apocalypse-now", "title": "Apocalypse Now", "template": "manual-story-detail" }
+  },
+  {
+    "id": "manual-the-dark-knight-medium-villain",
+    "difficulty": "medium",
+    "prompt": "Quel ennemi principal de Batman plonge Gotham dans le chaos dans \"The Dark Knight\" ?",
+    "answer": "Joker",
+    "acceptedAnswers": ["Joker", "le Joker"],
+    "metadata": { "source": "manual", "movieId": "the-dark-knight", "title": "The Dark Knight", "template": "manual-story-detail" }
+  },
+  {
+    "id": "manual-the-shining-medium-hotel",
+    "difficulty": "medium",
+    "prompt": "Comment s'appelle l'hotel isole ou se deroule \"The Shining\" ?",
+    "answer": "Overlook Hotel",
+    "acceptedAnswers": ["Overlook Hotel", "Overlook", "l'Overlook Hotel"],
+    "metadata": { "source": "manual", "movieId": "the-shining", "title": "The Shining", "template": "manual-story-detail" }
+  },
+  {
+    "id": "manual-fight-club-medium-tyler",
+    "difficulty": "medium",
+    "prompt": "Quel personnage charismatique lance le club clandestin dans \"Fight Club\" ?",
+    "answer": "Tyler Durden",
+    "acceptedAnswers": ["Tyler Durden"],
+    "metadata": { "source": "manual", "movieId": "fight-club", "title": "Fight Club", "template": "manual-story-detail" }
+  },
+  {
+    "id": "manual-whiplash-medium-instrument",
+    "difficulty": "medium",
+    "prompt": "De quel instrument Andrew est-il le jeune virtuose dans \"Whiplash\" ?",
+    "answer": "batterie",
+    "acceptedAnswers": ["batterie", "la batterie"],
+    "metadata": { "source": "manual", "movieId": "whiplash", "title": "Whiplash", "template": "manual-story-detail" }
+  },
+  {
+    "id": "manual-parasite-medium-rich-family",
+    "difficulty": "medium",
+    "prompt": "Quel est le nom de la famille riche infiltree dans \"Parasite\" ?",
+    "answer": "Park",
+    "acceptedAnswers": ["Park", "la famille Park"],
+    "metadata": { "source": "manual", "movieId": "parasite", "title": "Parasite", "template": "manual-story-detail" }
+  },
+  {
+    "id": "manual-spirited-away-medium-heroine",
+    "difficulty": "medium",
+    "prompt": "Comment s'appelle l'heroine de \"Spirited Away\" ?",
+    "answer": "Chihiro",
+    "acceptedAnswers": ["Chihiro"],
+    "metadata": { "source": "manual", "movieId": "spirited-away", "title": "Spirited Away", "template": "manual-story-detail" }
+  },
+  {
+    "id": "manual-oldboy-medium-years",
+    "difficulty": "medium",
+    "prompt": "Combien d'annees le protagoniste d'\"Oldboy\" passe-t-il enferme avant d'etre relache ?",
+    "answer": "15",
+    "acceptedAnswers": ["15", "15 ans", "quinze"],
+    "metadata": { "source": "manual", "movieId": "oldboy", "title": "Oldboy", "template": "manual-story-detail" }
+  },
+  {
+    "id": "manual-blade-runner-medium-replicants",
+    "difficulty": "medium",
+    "prompt": "Comment s'appellent les etres artificiels traques dans \"Blade Runner\" ?",
+    "answer": "replicants",
+    "acceptedAnswers": ["replicants", "replicant"],
+    "metadata": { "source": "manual", "movieId": "blade-runner", "title": "Blade Runner", "template": "manual-story-detail" }
+  },
+  {
+    "id": "manual-children-of-men-medium-pregnant",
+    "difficulty": "medium",
+    "prompt": "Comment s'appelle la jeune femme enceinte que Theo doit proteger dans \"Children of Men\" ?",
+    "answer": "Kee",
+    "acceptedAnswers": ["Kee"],
+    "metadata": { "source": "manual", "movieId": "children-of-men", "title": "Children of Men", "template": "manual-story-detail" }
+  },
+  {
+    "id": "manual-amelie-medium-neighborhood",
+    "difficulty": "medium",
+    "prompt": "Dans quel quartier parisien se deroule principalement \"Amelie\" ?",
+    "answer": "Montmartre",
+    "acceptedAnswers": ["Montmartre"],
+    "metadata": { "source": "manual", "movieId": "amelie", "title": "Amelie", "template": "manual-story-detail" }
+  },
+  {
+    "id": "manual-moonlight-medium-protagonist",
+    "difficulty": "medium",
+    "prompt": "Comment s'appelle le protagoniste dont on suit l'enfance, l'adolescence puis l'age adulte dans \"Moonlight\" ?",
+    "answer": "Chiron",
+    "acceptedAnswers": ["Chiron"],
+    "metadata": { "source": "manual", "movieId": "moonlight", "title": "Moonlight", "template": "manual-story-detail" }
+  },
+  {
+    "id": "manual-the-social-network-medium-platform",
+    "difficulty": "medium",
+    "prompt": "Quelle plateforme est au centre du conflit dans \"The Social Network\" ?",
+    "answer": "Facebook",
+    "acceptedAnswers": ["Facebook"],
+    "metadata": { "source": "manual", "movieId": "the-social-network", "title": "The Social Network", "template": "manual-story-detail" }
+  },
+
+  {
+    "id": "manual-the-godfather-hard-horse-head",
+    "difficulty": "hard",
+    "prompt": "Dans quel film trouve-t-on une tete de cheval dans un lit comme message mafieux ?",
+    "answer": "The Godfather",
+    "acceptedAnswers": ["The Godfather", "Le Parrain"],
+    "metadata": { "source": "manual", "movieId": "the-godfather", "title": "The Godfather", "template": "manual-story-precision" }
+  },
+  {
+    "id": "manual-apocalypse-now-hard-river-mission",
+    "difficulty": "hard",
+    "prompt": "Quel film suit une mission qui remonte un fleuve pendant la guerre du Vietnam pour eliminer le colonel Kurtz ?",
+    "answer": "Apocalypse Now",
+    "acceptedAnswers": ["Apocalypse Now"],
+    "metadata": { "source": "manual", "movieId": "apocalypse-now", "title": "Apocalypse Now", "template": "manual-story-precision" }
+  },
+  {
+    "id": "manual-memento-hard-polaroids",
+    "difficulty": "hard",
+    "prompt": "Quel film suit un homme atteint d'amnesie recente qui s'appuie sur des Polaroids et des tatouages pour mener son enquete ?",
+    "answer": "Memento",
+    "acceptedAnswers": ["Memento"],
+    "metadata": { "source": "manual", "movieId": "memento", "title": "Memento", "template": "manual-story-precision" }
+  },
+  {
+    "id": "manual-whiplash-hard-fletcher",
+    "difficulty": "hard",
+    "prompt": "Quel film oppose le jeune batteur Andrew a l'impitoyable professeur Terence Fletcher ?",
+    "answer": "Whiplash",
+    "acceptedAnswers": ["Whiplash"],
+    "metadata": { "source": "manual", "movieId": "whiplash", "title": "Whiplash", "template": "manual-story-precision" }
+  },
+  {
+    "id": "manual-parasite-hard-semibasement",
+    "difficulty": "hard",
+    "prompt": "Quel film suit une famille vivant dans un semi-sous-sol, infiltre une riche maison puis voit tout basculer apres un orage et la decouverte d'un secret cache ?",
+    "answer": "Parasite",
+    "acceptedAnswers": ["Parasite"],
+    "metadata": { "source": "manual", "movieId": "parasite", "title": "Parasite", "template": "manual-story-precision" }
+  },
+  {
+    "id": "manual-spirited-away-hard-bathhouse",
+    "difficulty": "hard",
+    "prompt": "Quel film montre une jeune heroine contrainte de travailler dans une maison de bains pour esprits afin de sauver ses parents transformes en cochons ?",
+    "answer": "Spirited Away",
+    "acceptedAnswers": ["Spirited Away", "Le Voyage de Chihiro"],
+    "metadata": { "source": "manual", "movieId": "spirited-away", "title": "Spirited Away", "template": "manual-story-precision" }
+  },
+  {
+    "id": "manual-oldboy-hard-hammer",
+    "difficulty": "hard",
+    "prompt": "Quel film coreen suit un homme libere apres quinze ans de captivite, lance dans une vengeance marquee par une celebre scene de combat au marteau ?",
+    "answer": "Oldboy",
+    "acceptedAnswers": ["Oldboy"],
+    "metadata": { "source": "manual", "movieId": "oldboy", "title": "Oldboy", "template": "manual-story-precision" }
+  },
+  {
+    "id": "manual-arrival-hard-time",
+    "difficulty": "hard",
+    "prompt": "Quel film relie l'apprentissage d'une langue extraterrestre a une perception non lineaire du temps ?",
+    "answer": "Arrival",
+    "acceptedAnswers": ["Arrival", "Premier Contact"],
+    "metadata": { "source": "manual", "movieId": "arrival", "title": "Arrival", "template": "manual-story-precision" }
+  },
+  {
+    "id": "manual-children-of-men-hard-theo-kee",
+    "difficulty": "hard",
+    "prompt": "Quel film suit Theo dans un monde sterile ou il doit escorter Kee, porteuse d'une grossesse consideree comme miraculeuse ?",
+    "answer": "Children of Men",
+    "acceptedAnswers": ["Children of Men", "Les Fils de l'homme"],
+    "metadata": { "source": "manual", "movieId": "children-of-men", "title": "Children of Men", "template": "manual-story-precision" }
+  },
+  {
+    "id": "manual-dune-hard-fremen",
+    "difficulty": "hard",
+    "prompt": "Quel film met en scene Paul Atreides, l'epice, les Fremen et la lutte pour le controle d'Arrakis ?",
+    "answer": "Dune",
+    "acceptedAnswers": ["Dune"],
+    "metadata": { "source": "manual", "movieId": "dune", "title": "Dune", "template": "manual-story-precision" }
+  },
+  {
+    "id": "manual-blade-runner-hard-dystopian-la",
+    "difficulty": "hard",
+    "prompt": "Quel film se deroule dans un Los Angeles futuriste ou un blade runner traque des replicants en fuite ?",
+    "answer": "Blade Runner",
+    "acceptedAnswers": ["Blade Runner"],
+    "metadata": { "source": "manual", "movieId": "blade-runner", "title": "Blade Runner", "template": "manual-story-precision" }
+  },
+  {
+    "id": "manual-life-is-beautiful-hard-camp-game",
+    "difficulty": "hard",
+    "prompt": "Quel film italien fait d'un camp de concentration un faux concours a points pour preserver l'imaginaire d'un enfant ?",
+    "answer": "Life Is Beautiful",
+    "acceptedAnswers": ["Life Is Beautiful", "La vie est belle"],
+    "metadata": { "source": "manual", "movieId": "life-is-beautiful", "title": "Life Is Beautiful", "template": "manual-story-precision" }
+  },
+  {
+    "id": "manual-the-shape-of-water-hard-amphibian",
+    "difficulty": "hard",
+    "prompt": "Quel film suit une femme muette qui tombe amoureuse d'une creature amphibie retenue captive dans un laboratoire ?",
+    "answer": "The Shape of Water",
+    "acceptedAnswers": ["The Shape of Water", "La Forme de l'eau"],
+    "metadata": { "source": "manual", "movieId": "the-shape-of-water", "title": "The Shape of Water", "template": "manual-story-precision" }
+  },
+  {
+    "id": "manual-la-haine-hard-one-day",
+    "difficulty": "hard",
+    "prompt": "Quel film francais en noir et blanc suit Vinz, Said et Hubert sur une seule journee apres une nuit d'emeutes ?",
+    "answer": "La Haine",
+    "acceptedAnswers": ["La Haine"],
+    "metadata": { "source": "manual", "movieId": "la-haine", "title": "La Haine", "template": "manual-story-precision" }
+  },
+  {
+    "id": "manual-city-of-god-hard-buscape",
+    "difficulty": "hard",
+    "prompt": "Quel film bresilien montre Buscape grandir au milieu de la guerre des gangs dans la favela Cidade de Deus ?",
+    "answer": "City of God",
+    "acceptedAnswers": ["City of God", "La Cite de Dieu"],
+    "metadata": { "source": "manual", "movieId": "city-of-god", "title": "City of God", "template": "manual-story-precision" }
+  },
+  {
+    "id": "manual-pans-labyrinth-hard-vidal",
+    "difficulty": "hard",
+    "prompt": "Quel film mele une jeune fille, un faune et la terreur du capitaine Vidal dans l'Espagne d'apres-guerre ?",
+    "answer": "Pan's Labyrinth",
+    "acceptedAnswers": ["Pan's Labyrinth", "Le Labyrinthe de Pan"],
+    "metadata": { "source": "manual", "movieId": "pans-labyrinth", "title": "Pan's Labyrinth", "template": "manual-story-precision" }
+  }
+]

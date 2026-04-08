@@ -16,20 +16,6 @@ TARGET_COUNTS = {
     "hard": 666,
 }
 
-ORDINAL_LABELS = {
-    1: "premier",
-    2: "deuxieme",
-    3: "troisieme",
-    4: "quatrieme",
-    5: "cinquieme",
-    6: "sixieme",
-    7: "septieme",
-    8: "huitieme",
-    9: "neuvieme",
-    10: "dixieme",
-}
-
-
 def load_json(path: Path, fallback):
     if not path.exists():
         return fallback
@@ -58,10 +44,6 @@ def build_question(question_id, difficulty, prompt, answer, accepted_answers, me
         "acceptedAnswers": dedupe_answers([answer, *accepted_answers]),
         "metadata": metadata,
     }
-
-
-def ordinal_label(index):
-    return ORDINAL_LABELS.get(index, f"{index}e")
 
 
 def decade_label(year):
@@ -105,12 +87,8 @@ def build_director_contexts(movies):
             previous_movie = sorted_filmography[index - 1] if index > 0 else None
             next_movie = sorted_filmography[index + 1] if index + 1 < len(sorted_filmography) else None
             contexts[movie["id"]] = {
-                "rank": index + 1,
-                "count": len(sorted_filmography),
                 "previous": previous_movie,
                 "next": next_movie,
-                "first": sorted_filmography[0],
-                "last": sorted_filmography[-1],
             }
 
     return contexts
@@ -126,12 +104,8 @@ def build_movie_questions(movie, director_context):
     language = movie["language"]
     genre = movie["genre"]
     accepted_title_answers = [title, *movie.get("aliases", [])]
-    rank_label = ordinal_label(director_context["rank"])
-    total_movies = director_context["count"]
     previous_movie = director_context["previous"]
     next_movie = director_context["next"]
-    first_movie = director_context["first"]
-    last_movie = director_context["last"]
     next_gap = next_movie["year"] - year if next_movie else None
     previous_gap = year - previous_movie["year"] if previous_movie else None
     metadata = {
@@ -188,7 +162,7 @@ def build_movie_questions(movie, director_context):
         medium_primary_question = build_question(
             f"{movie_id}-medium-title-between-two-films",
             "medium",
-            f'Dans la filmographie de {director} presente ici, quel film {genre} sort apres "{previous_movie["title"]}" et avant "{next_movie["title"]}" ?',
+            f'Quel film de {director}, classe {genre}, sort {after_reference_phrase(year - previous_movie["year"], previous_movie["title"])} et {before_reference_phrase(next_movie["year"] - year, next_movie["title"])} ?',
             title,
             accepted_title_answers,
             {**metadata, "template": "medium-title-between-two-films"},
@@ -197,7 +171,7 @@ def build_movie_questions(movie, director_context):
         medium_primary_question = build_question(
             f"{movie_id}-medium-title-after-previous",
             "medium",
-            f'Dans la filmographie de {director} presente ici, quel film {genre}, tourne en {language}, sort apres "{previous_movie["title"]}" ?',
+            f'Quel film de {director}, classe {genre} et tourne en {language}, sort {after_reference_phrase(year - previous_movie["year"], previous_movie["title"])} ?',
             title,
             accepted_title_answers,
             {**metadata, "template": "medium-title-after-previous"},
@@ -206,7 +180,7 @@ def build_movie_questions(movie, director_context):
         medium_primary_question = build_question(
             f"{movie_id}-medium-title-before-next",
             "medium",
-            f'Dans la filmographie de {director} presente ici, quel film {genre}, produit par {country}, sort avant "{next_movie["title"]}" ?',
+            f'Quel film de {director}, classe {genre} et produit par {country}, sort {before_reference_phrase(next_movie["year"] - year, next_movie["title"])} ?',
             title,
             accepted_title_answers,
             {**metadata, "template": "medium-title-before-next"},
@@ -262,7 +236,7 @@ def build_movie_questions(movie, director_context):
             build_question(
                 f"{movie_id}-hard-title-gap-both-sides",
                 "hard",
-                f'Dans cette base, quel film {genre}, tourne en {language} et produit par {country}, sort {after_reference_phrase(year - previous_movie["year"], previous_movie["title"])} et {before_reference_phrase(next_movie["year"] - year, next_movie["title"])} dans la filmographie de {director} ?',
+                f'Quel film {genre}, tourne en {language} et produit par {country}, de {director}, sort {after_reference_phrase(year - previous_movie["year"], previous_movie["title"])} et {before_reference_phrase(next_movie["year"] - year, next_movie["title"])} ?',
                 title,
                 accepted_title_answers,
                 {**metadata, "template": "hard-title-gap-both-sides"},
@@ -270,31 +244,31 @@ def build_movie_questions(movie, director_context):
             build_question(
                 f"{movie_id}-hard-gap-number-between-neighbors",
                 "hard",
-                f'Combien d''annees separent "{previous_movie["title"]}" et "{title}" dans la filmographie de {director} presente ici ?',
+                f'Combien d''annees separent "{previous_movie["title"]}" et "{title}" dans la filmographie de {director} ?',
                 str(previous_gap),
                 [str(previous_gap)],
                 {**metadata, "template": "hard-gap-number-between-neighbors"},
             ),
             build_question(
-                f"{movie_id}-hard-rank-filmography",
+                f"{movie_id}-hard-year-between-neighbors",
                 "hard",
-                f'Quel est le {rank_label} film le plus ancien de {director} present dans cette base, si l''on classe sa filmographie par annee de sortie ?',
-                title,
-                accepted_title_answers,
-                {**metadata, "template": "hard-rank-filmography"},
-            ),
-            build_question(
-                f"{movie_id}-hard-year-from-rank",
-                "hard",
-                f'En quelle annee sort le {rank_label} film le plus ancien de {director} present dans cette base ?',
+                f'En quelle annee sort le film de {director} place {after_reference_phrase(year - previous_movie["year"], previous_movie["title"])} et {before_reference_phrase(next_movie["year"] - year, next_movie["title"])} ?',
                 year_text,
                 [year_text],
-                {**metadata, "template": "hard-year-from-rank"},
+                {**metadata, "template": "hard-year-between-neighbors"},
+            ),
+            build_question(
+                f"{movie_id}-hard-genre-between-neighbors",
+                "hard",
+                f'Quel genre correspond au film de {director} situe {after_reference_phrase(year - previous_movie["year"], previous_movie["title"])} et {before_reference_phrase(next_movie["year"] - year, next_movie["title"])} ?',
+                genre,
+                [genre],
+                {**metadata, "template": "hard-genre-between-neighbors"},
             ),
             build_question(
                 f"{movie_id}-hard-director-between-two-films",
                 "hard",
-                f'Quel realisateur a dans cette base un film "{previous_movie["title"]}", un film "{next_movie["title"]}" et, entre les deux, le film {genre} "{title}" ?',
+                f'Quel realisateur a signe "{previous_movie["title"]}", "{next_movie["title"]}" et, entre les deux, le film {genre} "{title}" ?',
                 director,
                 [director],
                 {**metadata, "template": "hard-director-between-two-films"},
@@ -313,34 +287,34 @@ def build_movie_questions(movie, director_context):
             build_question(
                 f"{movie_id}-hard-gap-number-after-previous",
                 "hard",
-                f'Combien d''annees separent "{previous_movie["title"]}" et "{title}" dans la filmographie de {director} presente ici ?',
+                f'Combien d''annees separent "{previous_movie["title"]}" et "{title}" dans la filmographie de {director} ?',
                 str(previous_gap),
                 [str(previous_gap)],
                 {**metadata, "template": "hard-gap-number-after-previous"},
             ),
             build_question(
-                f"{movie_id}-hard-rank-filmography",
+                f"{movie_id}-hard-year-from-gap-after-previous",
                 "hard",
-                f'Quel est le {rank_label} film le plus ancien de {director} present dans cette base, si l''on classe sa filmographie par annee de sortie ?',
-                title,
-                accepted_title_answers,
-                {**metadata, "template": "hard-rank-filmography"},
-            ),
-            build_question(
-                f"{movie_id}-hard-last-after-first",
-                "hard",
-                f'Quel film de {director} est le plus recent dans cette base, sachant que le plus ancien est "{first_movie["title"]}" ?',
-                last_movie["title"],
-                [last_movie["title"], *last_movie.get("aliases", [])],
-                {**metadata, "template": "hard-last-after-first"},
-            ),
-            build_question(
-                f"{movie_id}-hard-year-from-rank",
-                "hard",
-                f'En quelle annee sort le {rank_label} film le plus ancien de {director} present dans cette base ?',
+                f'En quelle annee sort le film de {director} qui arrive {after_reference_phrase(year - previous_movie["year"], previous_movie["title"])} ?',
                 year_text,
                 [year_text],
-                {**metadata, "template": "hard-year-from-rank"},
+                {**metadata, "template": "hard-year-from-gap-after-previous"},
+            ),
+            build_question(
+                f"{movie_id}-hard-country-from-gap-after-previous",
+                "hard",
+                f'De quel pays provient le film de {director} qui sort {after_reference_phrase(year - previous_movie["year"], previous_movie["title"])} et qui est tourne en {language} ?',
+                country,
+                [country],
+                {**metadata, "template": "hard-country-from-gap-after-previous"},
+            ),
+            build_question(
+                f"{movie_id}-hard-genre-from-gap-after-previous",
+                "hard",
+                f'Quel genre correspond au film de {director} qui sort {after_reference_phrase(year - previous_movie["year"], previous_movie["title"])} et qui est produit par {country} ?',
+                genre,
+                [genre],
+                {**metadata, "template": "hard-genre-from-gap-after-previous"},
             ),
         ]
     elif next_movie:
@@ -356,34 +330,34 @@ def build_movie_questions(movie, director_context):
             build_question(
                 f"{movie_id}-hard-gap-number-before-next",
                 "hard",
-                f'Combien d''annees separent "{title}" et "{next_movie["title"]}" dans la filmographie de {director} presente ici ?',
+                f'Combien d''annees separent "{title}" et "{next_movie["title"]}" dans la filmographie de {director} ?',
                 str(next_gap),
                 [str(next_gap)],
                 {**metadata, "template": "hard-gap-number-before-next"},
             ),
             build_question(
-                f"{movie_id}-hard-rank-filmography",
+                f"{movie_id}-hard-year-from-gap-before-next",
                 "hard",
-                f'Quel est le {rank_label} film le plus ancien de {director} present dans cette base, si l''on classe sa filmographie par annee de sortie ?',
-                title,
-                accepted_title_answers,
-                {**metadata, "template": "hard-rank-filmography"},
-            ),
-            build_question(
-                f"{movie_id}-hard-first-before-last",
-                "hard",
-                f'Quel film de {director} est le plus ancien dans cette base, sachant que le plus recent est "{last_movie["title"]}" ?',
-                first_movie["title"],
-                [first_movie["title"], *first_movie.get("aliases", [])],
-                {**metadata, "template": "hard-first-before-last"},
-            ),
-            build_question(
-                f"{movie_id}-hard-year-from-rank",
-                "hard",
-                f'En quelle annee sort le {rank_label} film le plus ancien de {director} present dans cette base ?',
+                f'En quelle annee sort le film de {director} qui arrive {before_reference_phrase(next_movie["year"] - year, next_movie["title"])} ?',
                 year_text,
                 [year_text],
-                {**metadata, "template": "hard-year-from-rank"},
+                {**metadata, "template": "hard-year-from-gap-before-next"},
+            ),
+            build_question(
+                f"{movie_id}-hard-country-from-gap-before-next",
+                "hard",
+                f'De quel pays provient le film de {director} qui sort {before_reference_phrase(next_movie["year"] - year, next_movie["title"])} et qui est tourne en {language} ?',
+                country,
+                [country],
+                {**metadata, "template": "hard-country-from-gap-before-next"},
+            ),
+            build_question(
+                f"{movie_id}-hard-genre-from-gap-before-next",
+                "hard",
+                f'Quel genre correspond au film de {director} qui sort {before_reference_phrase(next_movie["year"] - year, next_movie["title"])} et qui est produit par {country} ?',
+                genre,
+                [genre],
+                {**metadata, "template": "hard-genre-from-gap-before-next"},
             ),
         ]
     else:
