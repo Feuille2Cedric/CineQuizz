@@ -68,6 +68,14 @@ function normalizeChoiceKey(value) {
   return String(value ?? "").trim().toLowerCase();
 }
 
+function answerLength(value) {
+  return String(value ?? "").trim().length;
+}
+
+function answerWordCount(value) {
+  return String(value ?? "").trim().split(/\s+/).filter(Boolean).length;
+}
+
 export class QuizApp {
   constructor({ catalogRepository, patchRepository, gameRepository }) {
     this.catalogRepository = catalogRepository;
@@ -462,26 +470,52 @@ export class QuizApp {
       return [];
     }
 
-    const distractorPool = [];
     const seen = new Set([normalizeChoiceKey(question.answer)]);
+    const targetLength = answerLength(question.answer);
+    const targetWords = answerWordCount(question.answer);
 
-    for (const candidate of this.state.questions) {
-      if (candidate.id === question.id || candidate.difficulty !== question.difficulty) {
-        continue;
+    const collectDistractors = (predicate) => {
+      const values = [];
+
+      for (const candidate of shuffle(this.state.questions)) {
+        if (candidate.id === question.id || !predicate(candidate)) {
+          continue;
+        }
+
+        const label = String(candidate.answer ?? "").trim();
+        const key = normalizeChoiceKey(label);
+
+        if (!label || seen.has(key)) {
+          continue;
+        }
+
+        seen.add(key);
+        values.push(label);
+
+        if (values.length >= 3) {
+          break;
+        }
       }
 
-      const label = String(candidate.answer ?? "").trim();
-      const key = normalizeChoiceKey(label);
+      return values;
+    };
 
-      if (!label || seen.has(key)) {
-        continue;
-      }
+    const distractors = [
+      ...collectDistractors(
+        (candidate) =>
+          candidate.difficulty === question.difficulty &&
+          Math.abs(answerLength(candidate.answer) - targetLength) <= 35 &&
+          Math.abs(answerWordCount(candidate.answer) - targetWords) <= 6
+      ),
+      ...collectDistractors((candidate) => candidate.difficulty === question.difficulty),
+      ...collectDistractors(
+        (candidate) =>
+          Math.abs(answerLength(candidate.answer) - targetLength) <= 35 &&
+          Math.abs(answerWordCount(candidate.answer) - targetWords) <= 6
+      ),
+      ...collectDistractors(() => true)
+    ].slice(0, 3);
 
-      seen.add(key);
-      distractorPool.push(label);
-    }
-
-    const distractors = shuffle(distractorPool).slice(0, 3);
     return shuffle([question.answer, ...distractors]);
   }
 
