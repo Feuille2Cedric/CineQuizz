@@ -436,8 +436,12 @@ function syncContributionMode() {
 function syncNewQuestionMode() {
   const isMcq = dom.newQuestionType.value === "mcq";
   dom.newQuestionAliasesFields.classList.toggle("is-hidden", isMcq);
+  dom.newQuestionAliasesFields.hidden = isMcq;
+  dom.newQuestionAliasesFields.style.display = isMcq ? "none" : "";
   dom.newQuestionAliases.disabled = dom.newQuestionType.disabled || isMcq;
   dom.newQuestionMcqFields.classList.toggle("is-hidden", !isMcq);
+  dom.newQuestionMcqFields.hidden = !isMcq;
+  dom.newQuestionMcqFields.style.display = isMcq ? "" : "none";
   dom.newQuestionDistractors.disabled = dom.newQuestionType.disabled || !isMcq;
 }
 

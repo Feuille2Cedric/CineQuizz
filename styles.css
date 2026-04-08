@@ -715,6 +715,13 @@ button {
   display: none !important;
 }
 
+#new-question-aliases-fields.is-hidden,
+#new-question-aliases-fields[hidden],
+#new-question-mcq-fields.is-hidden,
+#new-question-mcq-fields[hidden] {
+  display: none !important;
+}
+
 .stats-card h2,
 .section-heading h2,
 .data-card h3,
