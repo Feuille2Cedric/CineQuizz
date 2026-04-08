@@ -174,3 +174,60 @@ end;
 $$;
 
 grant execute on function public.register_answer(text, text, boolean, text) to authenticated;
+
+create or replace function public.reopen_question(
+  p_question_id text
+)
+returns table (
+  removed boolean,
+  total_answered integer,
+  total_correct integer
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_user_id uuid := auth.uid();
+  v_existing public.user_question_progress%rowtype;
+begin
+  if v_user_id is null then
+    raise exception 'Authentication required';
+  end if;
+
+  insert into public.profiles (user_id, nickname)
+  values (v_user_id, 'Spectateur')
+  on conflict (user_id) do nothing;
+
+  select *
+  into v_existing
+  from public.user_question_progress
+  where user_id = v_user_id
+    and question_id = p_question_id;
+
+  if not found then
+    return query
+      select false, profiles.total_answered, profiles.total_correct
+      from public.profiles
+      where profiles.user_id = v_user_id;
+    return;
+  end if;
+
+  delete from public.user_question_progress
+  where user_id = v_user_id
+    and question_id = p_question_id;
+
+  update public.profiles
+  set
+    total_answered = greatest(total_answered - 1, 0),
+    total_correct = greatest(total_correct - case when v_existing.is_correct then 1 else 0 end, 0)
+  where user_id = v_user_id;
+
+  return query
+    select true, profiles.total_answered, profiles.total_correct
+    from public.profiles
+    where profiles.user_id = v_user_id;
+end;
+$$;
+
+grant execute on function public.reopen_question(text) to authenticated;

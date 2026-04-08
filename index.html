@@ -25,6 +25,56 @@
             Configurez Supabase dans <code>config.js</code> pour activer le
             classement global.
           </p>
+
+          <section id="auth-panel" class="auth-panel is-hidden">
+            <div class="section-heading compact-heading">
+              <h2>Connexion</h2>
+              <p>
+                Connectez-vous pour conserver votre progression et apparaitre
+                dans le classement global.
+              </p>
+            </div>
+
+            <form id="auth-form" class="auth-form">
+              <label for="auth-email-input">E-mail</label>
+              <input
+                id="auth-email-input"
+                name="email"
+                type="email"
+                placeholder="vous@example.com"
+                autocomplete="email"
+              />
+
+              <label for="auth-password-input">Mot de passe</label>
+              <input
+                id="auth-password-input"
+                name="password"
+                type="password"
+                placeholder="Au moins 6 caracteres"
+                autocomplete="current-password"
+              />
+
+              <div class="action-row">
+                <button type="submit" class="primary-button" data-auth-action="sign-in">
+                  Se connecter
+                </button>
+                <button type="submit" class="ghost-button" data-auth-action="sign-up">
+                  Creer un compte
+                </button>
+              </div>
+            </form>
+
+            <div id="auth-session" class="auth-session is-hidden">
+              <p class="auth-identity">
+                Connecte avec <strong id="auth-email-value"></strong>
+              </p>
+              <button id="auth-signout-button" type="button" class="ghost-button">
+                Se deconnecter
+              </button>
+            </div>
+
+            <p id="auth-status" class="auth-status" aria-live="polite"></p>
+          </section>
         </div>
       </header>
 
@@ -94,6 +144,12 @@
               </form>
 
               <div id="answer-feedback" class="feedback" aria-live="polite"></div>
+
+              <div class="question-actions">
+                <button id="edit-toggle-button" type="button" class="ghost-button is-hidden">
+                  Corriger cette question
+                </button>
+              </div>
 
               <section id="edit-panel" class="edit-panel is-hidden">
                 <div class="section-heading">
@@ -171,6 +227,52 @@
               </p>
             </div>
 
+            <div class="insight-grid">
+              <section class="stats-card compact-card">
+                <h2>Mes stats</h2>
+                <dl class="stats-grid">
+                  <div>
+                    <dt>Bonnes reponses</dt>
+                    <dd id="stat-correct">0</dd>
+                  </div>
+                  <div>
+                    <dt>Total repondu</dt>
+                    <dd id="stat-answered">0</dd>
+                  </div>
+                  <div>
+                    <dt>Precision</dt>
+                    <dd id="stat-accuracy">0%</dd>
+                  </div>
+                  <div>
+                    <dt>Restantes</dt>
+                    <dd id="stat-remaining">0</dd>
+                  </div>
+                </dl>
+              </section>
+
+              <section class="stats-card compact-card">
+                <h2>Catalogue</h2>
+                <dl class="stats-grid">
+                  <div>
+                    <dt>Facile</dt>
+                    <dd id="catalog-easy">0</dd>
+                  </div>
+                  <div>
+                    <dt>Moyen</dt>
+                    <dd id="catalog-medium">0</dd>
+                  </div>
+                  <div>
+                    <dt>Difficile</dt>
+                    <dd id="catalog-hard">0</dd>
+                  </div>
+                  <div>
+                    <dt>Total</dt>
+                    <dd id="catalog-total">0</dd>
+                  </div>
+                </dl>
+              </section>
+            </div>
+
             <div class="data-grid">
               <article class="data-card">
                 <h3>Importer un pack JSON</h3>
@@ -203,52 +305,6 @@
             <pre id="data-message" class="data-message"></pre>
           </section>
         </section>
-
-        <aside class="sidebar">
-          <section class="stats-card">
-            <h2>Statistiques</h2>
-            <dl class="stats-grid">
-              <div>
-                <dt>Bonnes reponses</dt>
-                <dd id="stat-correct">0</dd>
-              </div>
-              <div>
-                <dt>Total repondu</dt>
-                <dd id="stat-answered">0</dd>
-              </div>
-              <div>
-                <dt>Precision</dt>
-                <dd id="stat-accuracy">0%</dd>
-              </div>
-              <div>
-                <dt>Restantes</dt>
-                <dd id="stat-remaining">0</dd>
-              </div>
-            </dl>
-          </section>
-
-          <section class="stats-card">
-            <h2>Catalogue</h2>
-            <dl class="stats-grid">
-              <div>
-                <dt>Facile</dt>
-                <dd id="catalog-easy">0</dd>
-              </div>
-              <div>
-                <dt>Moyen</dt>
-                <dd id="catalog-medium">0</dd>
-              </div>
-              <div>
-                <dt>Difficile</dt>
-                <dd id="catalog-hard">0</dd>
-              </div>
-              <div>
-                <dt>Total</dt>
-                <dd id="catalog-total">0</dd>
-              </div>
-            </dl>
-          </section>
-        </aside>
       </main>
     </div>
 

@@ -96,6 +96,33 @@ export class BrowserGameRepository {
     };
   }
 
+  async reopenQuestion(questionId) {
+    const previousAttempt = this.progress[questionId];
+
+    if (!previousAttempt) {
+      return {
+        removed: false,
+        stats: toStats(this.profile)
+      };
+    }
+
+    delete this.progress[questionId];
+    this.profile.totalAnswered = Math.max((this.profile.totalAnswered ?? 0) - 1, 0);
+
+    if (previousAttempt.isCorrect) {
+      this.profile.totalCorrect = Math.max((this.profile.totalCorrect ?? 0) - 1, 0);
+    }
+
+    this.#persistProfile();
+    writeJson(PROGRESS_KEY, this.progress);
+    this.#syncLeaderboard();
+
+    return {
+      removed: true,
+      stats: toStats(this.profile)
+    };
+  }
+
   async getLeaderboard() {
     return readJson(LEADERBOARD_KEY, [])
       .sort((left, right) => {

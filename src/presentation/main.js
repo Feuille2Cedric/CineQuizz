@@ -12,18 +12,29 @@ import { SupabaseGameRepository } from "../infrastructure/supabase/SupabaseGameR
 const dom = {
   storageMode: document.getElementById("storage-mode"),
   syncStatus: document.getElementById("sync-status"),
+  authPanel: document.getElementById("auth-panel"),
+  authForm: document.getElementById("auth-form"),
+  authEmailInput: document.getElementById("auth-email-input"),
+  authPasswordInput: document.getElementById("auth-password-input"),
+  authSession: document.getElementById("auth-session"),
+  authEmailValue: document.getElementById("auth-email-value"),
+  authSignoutButton: document.getElementById("auth-signout-button"),
+  authStatus: document.getElementById("auth-status"),
   tabs: [...document.querySelectorAll(".tab")],
   panels: [...document.querySelectorAll(".tab-panel")],
   difficultyButtons: [...document.querySelectorAll(".difficulty-button")],
   nicknameForm: document.getElementById("nickname-form"),
   nicknameInput: document.getElementById("nickname-input"),
+  nicknameSubmitButton: document.querySelector('#nickname-form button[type="submit"]'),
   questionDifficulty: document.getElementById("question-difficulty"),
   questionProgress: document.getElementById("question-progress"),
   questionText: document.getElementById("question-text"),
   answerForm: document.getElementById("answer-form"),
   answerInput: document.getElementById("answer-input"),
+  answerSubmitButton: document.querySelector('#answer-form button[type="submit"]'),
   nextQuestionButton: document.getElementById("next-question-button"),
   answerFeedback: document.getElementById("answer-feedback"),
+  editToggleButton: document.getElementById("edit-toggle-button"),
   editPanel: document.getElementById("edit-panel"),
   editForm: document.getElementById("edit-form"),
   editPrompt: document.getElementById("edit-prompt"),
@@ -44,6 +55,11 @@ const dom = {
   exportOverridesButton: document.getElementById("export-overrides-button"),
   resetCustomDataButton: document.getElementById("reset-custom-data-button"),
   dataMessage: document.getElementById("data-message")
+};
+
+const uiState = {
+  editPanelOpen: false,
+  editQuestionId: null
 };
 
 function escapeHtml(value) {
@@ -104,6 +120,12 @@ function reportUiError(error) {
   setFeedbackMessage(`Erreur: ${error.message}`, "is-wrong");
 }
 
+function reportAuthError(error) {
+  console.error(error);
+  dom.authStatus.textContent = error.message;
+  dom.dataMessage.textContent = error.message;
+}
+
 function fillEditForm(question) {
   if (!question) {
     return;
@@ -117,12 +139,31 @@ function fillEditForm(question) {
 }
 
 function render(viewModel) {
-  dom.storageMode.textContent = viewModel.mode === "supabase" ? "Mode Supabase" : "Mode local";
-  dom.syncStatus.textContent =
-    viewModel.mode === "supabase"
-      ? "Questions, progression et classement charges depuis Supabase."
-      : "Progression stockee dans ce navigateur. Configurez config.js pour activer Supabase.";
+  const isSupabase = viewModel.mode === "supabase";
+  const requiresAuth = isSupabase && !viewModel.auth.isAuthenticated;
+  const activeQuestionId = viewModel.currentQuestion?.id ?? null;
+  const canEditQuestion = Boolean(activeQuestionId) && !requiresAuth;
+
+  if (uiState.editQuestionId !== activeQuestionId) {
+    uiState.editPanelOpen = false;
+    uiState.editQuestionId = activeQuestionId;
+  }
+
+  dom.storageMode.textContent = isSupabase ? "Mode Supabase" : "Mode local";
+  dom.syncStatus.textContent = isSupabase
+    ? requiresAuth
+      ? "Supabase est configure. Connectez-vous pour charger votre progression et le classement."
+      : "Questions, progression et classement charges depuis Supabase."
+    : "Progression stockee dans ce navigateur. Configurez config.js pour activer Supabase.";
+
+  dom.authPanel.classList.toggle("is-hidden", !isSupabase);
+  dom.authForm.classList.toggle("is-hidden", !isSupabase || viewModel.auth.isAuthenticated);
+  dom.authSession.classList.toggle("is-hidden", !isSupabase || !viewModel.auth.isAuthenticated);
+  dom.authEmailValue.textContent = viewModel.auth.email ?? "";
+
   dom.nicknameInput.value = viewModel.profile.nickname ?? "";
+  dom.nicknameInput.disabled = requiresAuth;
+  dom.nicknameSubmitButton.disabled = requiresAuth;
 
   dom.statCorrect.textContent = viewModel.stats.totalCorrect;
   dom.statAnswered.textContent = viewModel.stats.totalAnswered;
@@ -139,42 +180,55 @@ function render(viewModel) {
   }
 
   dom.questionDifficulty.textContent = difficultyLabel(viewModel.difficulty);
-  dom.questionProgress.textContent = `${viewModel.stats.remaining} question(s) restante(s) sur cette difficulte`;
+  dom.questionProgress.textContent = requiresAuth
+    ? "Connexion requise pour jouer en mode Supabase"
+    : `${viewModel.stats.remaining} question(s) restante(s) sur cette difficulte`;
+  dom.editToggleButton.classList.toggle("is-hidden", !canEditQuestion);
+  dom.editToggleButton.textContent = uiState.editPanelOpen
+    ? "Masquer l'editeur"
+    : "Corriger cette question";
 
-  if (!viewModel.currentQuestion) {
+  if (requiresAuth) {
+    dom.questionText.textContent =
+      "Connectez-vous ou creez un compte pour conserver votre progression et participer au classement global.";
+    dom.answerInput.value = "";
+    dom.answerInput.disabled = true;
+    dom.answerSubmitButton.disabled = true;
+    dom.nextQuestionButton.disabled = true;
+    dom.editPanel.classList.add("is-hidden");
+    setFeedbackMessage("Mode Supabase actif. Authentification requise.");
+  } else if (!viewModel.currentQuestion) {
     dom.questionText.textContent =
       "Toutes les questions de cette difficulte ont deja ete repondues pour ce profil.";
     dom.answerInput.value = "";
     dom.answerInput.disabled = true;
-    dom.answerForm.querySelector('button[type="submit"]').disabled = true;
+    dom.answerSubmitButton.disabled = true;
     dom.nextQuestionButton.disabled = true;
     dom.editPanel.classList.add("is-hidden");
     setFeedbackMessage("Changez de difficulte ou importez de nouvelles questions.");
   } else {
     dom.questionText.textContent = viewModel.currentQuestion.prompt;
     dom.answerInput.disabled = false;
-    dom.answerForm.querySelector('button[type="submit"]').disabled = false;
+    dom.answerSubmitButton.disabled = false;
     dom.nextQuestionButton.disabled = false;
+    fillEditForm(viewModel.currentQuestion);
 
     if (!viewModel.currentResult) {
       setFeedbackMessage("Pret. Tapez votre reponse puis validez.");
-      dom.editPanel.classList.add("is-hidden");
     } else if (viewModel.currentResult.isCorrect) {
       setFeedbackMessage(
         `Bonne reponse. La reponse attendue etait: ${viewModel.currentResult.expectedAnswer}`,
         "is-correct"
       );
-      fillEditForm(viewModel.currentQuestion);
-      dom.editPanel.classList.remove("is-hidden");
     } else {
       setFeedbackMessage(
         `Incorrect. Votre reponse: ${viewModel.currentResult.submittedAnswer || "(vide)"}\nBonne reponse: ${viewModel.currentResult.expectedAnswer}`,
         "is-wrong"
       );
-      fillEditForm(viewModel.currentQuestion);
-      dom.editPanel.classList.remove("is-hidden");
     }
   }
+
+  dom.editPanel.classList.toggle("is-hidden", !canEditQuestion || !uiState.editPanelOpen);
 
   dom.leaderboardBody.innerHTML = serializeLeaderboardRows(
     viewModel.leaderboard,
@@ -258,7 +312,9 @@ async function main() {
     button.addEventListener("click", () => {
       render(app.setDifficulty(button.dataset.difficulty));
       dom.answerInput.value = "";
-      dom.answerInput.focus();
+      if (!dom.answerInput.disabled) {
+        dom.answerInput.focus();
+      }
     });
   });
 
@@ -279,6 +335,50 @@ async function main() {
     }
   });
 
+  dom.authForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    try {
+      const action = event.submitter?.dataset.authAction;
+      const email = dom.authEmailInput.value.trim();
+      const password = dom.authPasswordInput.value;
+      const preferredNickname = dom.nicknameInput.value.trim();
+
+      if (!email) {
+        dom.authStatus.textContent = "L'e-mail est requis.";
+        return;
+      }
+
+      if (!password || password.length < 6) {
+        dom.authStatus.textContent = "Le mot de passe doit faire au moins 6 caracteres.";
+        return;
+      }
+
+      const result =
+        action === "sign-up"
+          ? await app.signUp({ email, password, preferredNickname })
+          : await app.signIn({ email, password, preferredNickname });
+
+      render(result.viewModel);
+      dom.authPasswordInput.value = "";
+      dom.authStatus.textContent = result.message;
+      dom.dataMessage.textContent = result.message;
+    } catch (error) {
+      reportAuthError(error);
+    }
+  });
+
+  dom.authSignoutButton.addEventListener("click", async () => {
+    try {
+      render(await app.signOut());
+      dom.authPasswordInput.value = "";
+      dom.authStatus.textContent = "Session fermee.";
+      dom.dataMessage.textContent = "Deconnexion effectuee.";
+    } catch (error) {
+      reportAuthError(error);
+    }
+  });
+
   dom.answerForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     try {
@@ -290,16 +390,27 @@ async function main() {
     }
   });
 
+  dom.editToggleButton.addEventListener("click", () => {
+    uiState.editPanelOpen = !uiState.editPanelOpen;
+    dom.editToggleButton.textContent = uiState.editPanelOpen
+      ? "Masquer l'editeur"
+      : "Corriger cette question";
+    dom.editPanel.classList.toggle("is-hidden", !uiState.editPanelOpen);
+  });
+
   dom.nextQuestionButton.addEventListener("click", () => {
     dom.answerInput.value = "";
     render(app.pickNextQuestion());
-    dom.answerInput.focus();
+    if (!dom.answerInput.disabled) {
+      dom.answerInput.focus();
+    }
   });
 
   dom.editForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     try {
       const questionId = dom.editForm.dataset.questionId;
+      uiState.editPanelOpen = false;
 
       render(
         await app.saveQuestionOverride({
@@ -322,6 +433,7 @@ async function main() {
   dom.clearOverrideButton.addEventListener("click", async () => {
     try {
       const questionId = dom.editForm.dataset.questionId;
+      uiState.editPanelOpen = false;
       render(await app.clearQuestionOverride(questionId));
       dom.dataMessage.textContent = "Correction locale supprimee.";
     } catch (error) {

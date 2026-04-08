@@ -42,6 +42,10 @@ export class QuizApp {
           totalCorrect: 0
         }
       },
+      auth: {
+        isAuthenticated: true,
+        email: null
+      },
       answeredQuestionIds: new Set(),
       questions: [],
       currentQuestion: null,
@@ -55,12 +59,7 @@ export class QuizApp {
     await this.#reloadQuestions();
 
     const sessionState = await this.gameRepository.initialize(preferredNickname);
-    this.state.profile.userId = sessionState.userId;
-    this.state.profile.nickname = sessionState.nickname;
-    this.state.profile.stats = sessionState.stats;
-    this.state.answeredQuestionIds = new Set(sessionState.answeredQuestionIds);
-    this.state.mode = sessionState.mode;
-    this.state.leaderboard = await this.gameRepository.getLeaderboard();
+    await this.#applySessionState(sessionState);
 
     this.pickNextQuestion();
     return this.getViewModel();
@@ -79,6 +78,7 @@ export class QuizApp {
 
     return {
       mode: this.state.mode,
+      auth: this.state.auth,
       profile: this.state.profile,
       difficulty: this.state.difficulty,
       difficultyLabel: toDifficultyLabel(this.state.difficulty),
@@ -105,6 +105,7 @@ export class QuizApp {
   }
 
   async updateNickname(nickname) {
+    this.#assertCanUseSupabaseProfile();
     const result = await this.gameRepository.updateNickname(nickname);
     this.state.profile.nickname = result.nickname;
     this.state.profile.stats = result.stats;
@@ -113,6 +114,8 @@ export class QuizApp {
   }
 
   async submitAnswer(rawAnswer) {
+    this.#assertCanUseSupabaseProfile();
+
     if (!this.state.currentQuestion) {
       throw new Error("Aucune question active.");
     }
@@ -140,6 +143,37 @@ export class QuizApp {
       submittedAnswer: rawAnswer
     };
 
+    return this.getViewModel();
+  }
+
+  async signIn({ email, password, preferredNickname }) {
+    const result = await this.gameRepository.signIn({ email, password, preferredNickname });
+    await this.#applySessionState(result.sessionState);
+    this.pickNextQuestion();
+    return {
+      viewModel: this.getViewModel(),
+      message: result.message ?? "Connexion reussie."
+    };
+  }
+
+  async signUp({ email, password, preferredNickname }) {
+    const result = await this.gameRepository.signUp({ email, password, preferredNickname });
+    await this.#applySessionState(result.sessionState);
+    this.pickNextQuestion();
+    return {
+      viewModel: this.getViewModel(),
+      message: result.message ?? "Compte cree."
+    };
+  }
+
+  async signOut() {
+    if (typeof this.gameRepository.signOut !== "function") {
+      throw new Error("La deconnexion n'est pas disponible dans ce mode.");
+    }
+
+    const sessionState = await this.gameRepository.signOut(this.state.profile.nickname);
+    await this.#applySessionState(sessionState);
+    this.pickNextQuestion();
     return this.getViewModel();
   }
 
@@ -179,15 +213,19 @@ export class QuizApp {
       difficulty
     });
 
+    await this.#reopenQuestionForReplay(questionId);
     await this.#reloadQuestions();
-    this.state.currentQuestion = this.#findQuestion(questionId);
+    this.state.currentResult = null;
+    this.state.currentQuestion = this.#resolveQuestionAfterEdition(questionId);
     return this.getViewModel();
   }
 
   async clearQuestionOverride(questionId) {
     this.patchRepository.removeOverride(questionId);
+    await this.#reopenQuestionForReplay(questionId);
     await this.#reloadQuestions();
-    this.state.currentQuestion = this.#findQuestion(questionId);
+    this.state.currentResult = null;
+    this.state.currentQuestion = this.#resolveQuestionAfterEdition(questionId);
     return this.getViewModel();
   }
 
@@ -232,6 +270,19 @@ export class QuizApp {
     this.state.questions = mergedQuestions;
   }
 
+  async #applySessionState(sessionState) {
+    this.state.profile.userId = sessionState.userId;
+    this.state.profile.nickname = sessionState.nickname;
+    this.state.profile.stats = sessionState.stats;
+    this.state.auth = sessionState.auth ?? {
+      isAuthenticated: true,
+      email: null
+    };
+    this.state.answeredQuestionIds = new Set(sessionState.answeredQuestionIds);
+    this.state.mode = sessionState.mode;
+    this.state.leaderboard = await this.gameRepository.getLeaderboard();
+  }
+
   #applyOverride(question, override) {
     if (!override) {
       return question;
@@ -248,11 +299,42 @@ export class QuizApp {
     return this.state.questions.find((question) => question.id === questionId) ?? null;
   }
 
+  #resolveQuestionAfterEdition(questionId) {
+    const editedQuestion = this.#findQuestion(questionId);
+
+    if (editedQuestion && editedQuestion.difficulty === this.state.difficulty) {
+      return editedQuestion;
+    }
+
+    return this.pickNextQuestion().currentQuestion;
+  }
+
   #getRemainingQuestionCount(difficulty) {
     return this.state.questions.filter(
       (question) =>
         question.difficulty === difficulty &&
         !this.state.answeredQuestionIds.has(question.id)
     ).length;
+  }
+
+  async #reopenQuestionForReplay(questionId) {
+    if (typeof this.gameRepository.reopenQuestion !== "function") {
+      this.state.answeredQuestionIds.delete(questionId);
+      return;
+    }
+
+    const result = await this.gameRepository.reopenQuestion(questionId);
+    this.state.answeredQuestionIds.delete(questionId);
+
+    if (result?.stats) {
+      this.state.profile.stats = result.stats;
+      this.state.leaderboard = await this.gameRepository.getLeaderboard();
+    }
+  }
+
+  #assertCanUseSupabaseProfile() {
+    if (this.state.mode === "supabase" && !this.state.auth.isAuthenticated) {
+      throw new Error("Connexion requise pour sauvegarder la progression et apparaitre dans le classement.");
+    }
   }
 }
