@@ -347,11 +347,13 @@ export class SupabaseGameRepository {
 
   async signUp({ email, password, preferredNickname }) {
     const nickname = this.#resolveNickname(preferredNickname);
+    const emailRedirectTo = new URL("./confirm.html", window.location.href).toString();
     await this.#assertNicknameAvailable(nickname);
     const { data, error } = await this.client.auth.signUp({
       email: email.trim().toLowerCase(),
       password,
       options: {
+        emailRedirectTo,
         data: {
           display_name: nickname
         }
