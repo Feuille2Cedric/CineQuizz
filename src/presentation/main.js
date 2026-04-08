@@ -75,7 +75,10 @@ const dom = {
   feedbackEditFields: document.getElementById("feedback-edit-fields"),
   feedbackPrompt: document.getElementById("feedback-prompt"),
   feedbackAnswer: document.getElementById("feedback-answer"),
+  feedbackAliasesFields: document.getElementById("feedback-aliases-fields"),
   feedbackAliases: document.getElementById("feedback-aliases"),
+  feedbackMcqFields: document.getElementById("feedback-mcq-fields"),
+  feedbackDistractors: document.getElementById("feedback-distractors"),
   feedbackDifficulty: document.getElementById("feedback-difficulty"),
   questionFeedbackSubmit: document.getElementById("question-feedback-submit"),
   newQuestionForm: document.getElementById("new-question-form"),
@@ -422,15 +425,44 @@ function fillContributionEditForm(question, canRevealAnswer = false) {
     return;
   }
 
+  const isMcq = questionUsesMultipleChoice(question);
   dom.feedbackPrompt.value = question.prompt;
   dom.feedbackAnswer.value = canRevealAnswer ? question.answer : "";
-  dom.feedbackAliases.value = canRevealAnswer ? question.acceptedAnswers.slice(1).join(", ") : "";
+  dom.feedbackAliases.value = !isMcq && canRevealAnswer ? question.acceptedAnswers.slice(1).join(", ") : "";
+  dom.feedbackDistractors.value = isMcq
+    ? (question.metadata?.distractors ?? []).map((value) => String(value ?? "").trim()).filter(Boolean).join("\n")
+    : "";
   dom.feedbackDifficulty.value = question.difficulty;
+}
+
+function questionUsesMultipleChoice(question) {
+  if (!question) {
+    return false;
+  }
+
+  const manualChoices = question.metadata?.mcqChoices ?? question.metadata?.mcq_choices;
+  const manualDistractors = question.metadata?.distractors;
+  return (
+    question.metadata?.answerMode === "mcq" ||
+    (Array.isArray(manualChoices) && manualChoices.length >= 2) ||
+    (Array.isArray(manualDistractors) && manualDistractors.length >= 1)
+  );
 }
 
 function syncContributionMode() {
   const wantsEdit = dom.questionFeedbackType.value === "edit";
   dom.feedbackEditFields.classList.toggle("is-hidden", !wantsEdit);
+
+  const isMcq = questionUsesMultipleChoice(uiState.viewModel?.currentQuestion);
+  dom.feedbackAliasesFields.classList.toggle("is-hidden", !wantsEdit || isMcq);
+  dom.feedbackAliasesFields.hidden = !wantsEdit || isMcq;
+  dom.feedbackAliasesFields.style.display = !wantsEdit || isMcq ? "none" : "";
+  dom.feedbackAliases.disabled = !wantsEdit || isMcq;
+
+  dom.feedbackMcqFields.classList.toggle("is-hidden", !wantsEdit || !isMcq);
+  dom.feedbackMcqFields.hidden = !wantsEdit || !isMcq;
+  dom.feedbackMcqFields.style.display = !wantsEdit || !isMcq ? "none" : "";
+  dom.feedbackDistractors.disabled = !wantsEdit || !isMcq;
 }
 
 function syncNewQuestionMode() {
@@ -615,6 +647,7 @@ function render(viewModel) {
   dom.feedbackPrompt.disabled = !canContribute;
   dom.feedbackAnswer.disabled = !canContribute;
   dom.feedbackAliases.disabled = !canContribute;
+  dom.feedbackDistractors.disabled = !canContribute;
   dom.feedbackDifficulty.disabled = !canContribute;
   dom.questionFeedbackSubmit.disabled = !canContribute || !viewModel.currentQuestion;
   dom.newQuestionPrompt.disabled = !canContribute;
@@ -972,6 +1005,10 @@ async function main() {
         answer: dom.feedbackAnswer.value,
         aliases: dom.feedbackAliases.value
           .split(",")
+          .map((value) => value.trim())
+          .filter(Boolean),
+        distractors: dom.feedbackDistractors.value
+          .split(/\r?\n/)
           .map((value) => value.trim())
           .filter(Boolean),
         difficulty: dom.feedbackDifficulty.value

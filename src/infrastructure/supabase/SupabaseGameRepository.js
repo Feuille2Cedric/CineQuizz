@@ -207,7 +207,8 @@ export class SupabaseGameRepository {
     proposedPrompt,
     proposedAnswer,
     proposedAcceptedAnswers,
-    proposedDifficulty
+    proposedDifficulty,
+    proposedMetadata
   }) {
     this.#assertAuthenticated();
 
@@ -225,6 +226,7 @@ export class SupabaseGameRepository {
       payload.proposed_answer = proposedAnswer.trim();
       payload.proposed_accepted_answers = sanitizeAnswerList(proposedAnswer, proposedAcceptedAnswers);
       payload.proposed_difficulty = proposedDifficulty;
+      payload.proposed_metadata = proposedMetadata ?? {};
     }
 
     const { error } = await this.client.from("question_moderation_requests").insert(payload);
@@ -368,6 +370,16 @@ export class SupabaseGameRepository {
 
     if (decision === "approve") {
       if (request.request_type === "edit" && request.question_id) {
+        const { data: existingQuestion, error: existingQuestionError } = await this.client
+          .from("questions")
+          .select("metadata")
+          .eq("id", request.question_id)
+          .single();
+
+        if (existingQuestionError) {
+          throw new Error(`Chargement de la question impossible: ${existingQuestionError.message}`);
+        }
+
         const { error } = await this.client
           .from("questions")
           .update({
@@ -377,7 +389,11 @@ export class SupabaseGameRepository {
               request.proposed_answer,
               request.proposed_accepted_answers ?? []
             ),
-            difficulty: request.proposed_difficulty
+            difficulty: request.proposed_difficulty,
+            metadata: {
+              ...(existingQuestion?.metadata ?? {}),
+              ...(request.proposed_metadata ?? {})
+            }
           })
           .eq("id", request.question_id);
 

@@ -312,6 +312,7 @@ export class QuizApp {
     prompt,
     answer,
     aliases,
+    distractors,
     difficulty
   }) {
     this.#assertCanUseSupabaseProfile();
@@ -334,6 +335,12 @@ export class QuizApp {
       throw new Error("Une proposition de modification doit contenir une question et une reponse.");
     }
 
+    const isMcq = shouldUseMultipleChoice(currentQuestion);
+
+    if (type === "edit" && isMcq && (distractors ?? []).length < 2) {
+      throw new Error("Une proposition de QCM doit contenir au moins 2 fausses reponses.");
+    }
+
     await this.gameRepository.submitQuestionFeedback({
       type,
       questionId,
@@ -341,8 +348,15 @@ export class QuizApp {
       questionSnapshot: currentQuestion.toJSON(),
       proposedPrompt: type === "edit" ? prompt : null,
       proposedAnswer: type === "edit" ? answer : null,
-      proposedAcceptedAnswers: type === "edit" ? aliases : [],
-      proposedDifficulty: type === "edit" ? difficulty : null
+      proposedAcceptedAnswers: type === "edit" && !isMcq ? aliases : [],
+      proposedDifficulty: type === "edit" ? difficulty : null,
+      proposedMetadata:
+        type === "edit" && isMcq
+          ? {
+              answerMode: "mcq",
+              distractors
+            }
+          : {}
     });
 
     await this.#refreshModerationRequests();

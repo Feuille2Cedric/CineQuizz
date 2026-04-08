@@ -309,13 +309,25 @@
                     <label for="feedback-answer">Bonne reponse</label>
                     <input id="feedback-answer" name="answer" type="text" />
 
-                    <label for="feedback-aliases">Reponses acceptees supplementaires</label>
-                    <input
-                      id="feedback-aliases"
-                      name="aliases"
-                      type="text"
-                      placeholder="Separer par des virgules"
-                    />
+                    <div id="feedback-aliases-fields" class="contribution-fields">
+                      <label for="feedback-aliases">Reponses acceptees supplementaires</label>
+                      <input
+                        id="feedback-aliases"
+                        name="aliases"
+                        type="text"
+                        placeholder="Separer par des virgules"
+                      />
+                    </div>
+
+                    <div id="feedback-mcq-fields" class="contribution-fields is-hidden">
+                      <label for="feedback-distractors">Fausses reponses</label>
+                      <textarea
+                        id="feedback-distractors"
+                        name="distractors"
+                        rows="4"
+                        placeholder="Une fausse reponse par ligne"
+                      ></textarea>
+                    </div>
 
                     <label for="feedback-difficulty">Difficulte</label>
                     <select id="feedback-difficulty" name="difficulty">
