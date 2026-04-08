@@ -26,6 +26,15 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      - name: Prepare site directory
+        run: |
+          mkdir dist
+          find . -mindepth 1 -maxdepth 1 \
+            ! -name '.git' \
+            ! -name '.github' \
+            ! -name 'dist' \
+            -exec cp -R {} dist/ \;
+
       - name: Generate runtime config
         env:
           SUPABASE_URL: ${{ secrets.CINEQUIZZ_SUPABASE_URL }}
@@ -36,7 +45,7 @@ jobs:
             exit 1
           fi
 
-          cat > config.js <<EOF
+          cat > dist/config.js <<EOF
           window.CINEQUIZZ_CONFIG = {
             supabaseUrl: "${SUPABASE_URL}",
             supabaseAnonKey: "${SUPABASE_ANON_KEY}"
@@ -46,7 +55,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: ./dist
 
   deploy:
     environment:
