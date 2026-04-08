@@ -295,7 +295,9 @@ export class SupabaseGameRepository {
             answerMode: "mcq",
             distractors: sanitizeChoiceList(distractors)
           }
-        : {};
+        : {
+            answerMode: "text"
+          };
 
     const payload = {
       requester_user_id: this.userId,

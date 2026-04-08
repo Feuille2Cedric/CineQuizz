@@ -188,10 +188,16 @@ function serializeModerationRequests(requests) {
       const prompt = request.proposed_prompt ?? snapshotPrompt ?? "Question non renseignee";
       const answer = request.proposed_answer ?? request.question_snapshot?.answer ?? "Non renseignee";
       const proposedMetadata = request.proposed_metadata ?? {};
-      const isMcq = proposedMetadata.answerMode === "mcq";
+      const snapshotMetadata = request.question_snapshot?.metadata ?? {};
       const distractors = Array.isArray(proposedMetadata.distractors)
         ? proposedMetadata.distractors
-        : [];
+        : Array.isArray(snapshotMetadata.distractors)
+          ? snapshotMetadata.distractors
+          : [];
+      const isMcq =
+        proposedMetadata.answerMode === "mcq" ||
+        snapshotMetadata.answerMode === "mcq" ||
+        distractors.length > 0;
       const difficulty =
         request.proposed_difficulty ??
         request.question_snapshot?.difficulty ??
@@ -729,6 +735,7 @@ function buildRuntimeServices() {
 async function main() {
   const patchRepository = new LocalQuestionPatchRepository();
   let app;
+  let adminRefreshInFlight = false;
 
   async function bootApplication() {
     let { catalogRepository, gameRepository, supabaseAvailable } = buildRuntimeServices();
@@ -764,6 +771,31 @@ async function main() {
 
     if (startupMessage) {
       dom.syncStatus.textContent = startupMessage;
+    }
+  }
+
+  async function refreshAdminRequestsIfNeeded(force = false) {
+    const isAdmin = Boolean(uiState.viewModel?.profile?.isAdmin);
+    const adminTabActive = document.querySelector("#admin-tab.is-active");
+
+    if (!isAdmin || typeof app?.refreshModerationRequests !== "function") {
+      return;
+    }
+
+    if (!force && !adminTabActive) {
+      return;
+    }
+
+    if (adminRefreshInFlight) {
+      return;
+    }
+
+    adminRefreshInFlight = true;
+
+    try {
+      render(await app.refreshModerationRequests());
+    } finally {
+      adminRefreshInFlight = false;
     }
   }
 
@@ -859,21 +891,31 @@ async function main() {
 
   dom.tabs.forEach((tabButton) => {
     tabButton.addEventListener("click", async () => {
-      if (
-        tabButton.dataset.tabTarget === "admin-tab" &&
-        uiState.viewModel?.profile?.isAdmin &&
-        typeof app.refreshModerationRequests === "function"
-      ) {
-        try {
-          render(await app.refreshModerationRequests());
-        } catch (error) {
-          reportUiError(error);
+      try {
+        if (tabButton.dataset.tabTarget === "admin-tab") {
+          await refreshAdminRequestsIfNeeded(true);
         }
-      }
 
-      activateTab(tabButton.dataset.tabTarget);
+        activateTab(tabButton.dataset.tabTarget);
+      } catch (error) {
+        reportUiError(error);
+      }
     });
   });
+
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+      refreshAdminRequestsIfNeeded(true).catch(reportUiError);
+    }
+  });
+
+  window.addEventListener("focus", () => {
+    refreshAdminRequestsIfNeeded(true).catch(reportUiError);
+  });
+
+  window.setInterval(() => {
+    refreshAdminRequestsIfNeeded(false).catch(reportUiError);
+  }, 15000);
 
   dom.difficultyButtons.forEach((button) => {
     button.addEventListener("click", () => {
