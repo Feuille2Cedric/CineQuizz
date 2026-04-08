@@ -31,12 +31,16 @@ create table if not exists public.question_moderation_requests (
   proposed_answer text,
   proposed_accepted_answers jsonb not null default '[]'::jsonb,
   proposed_difficulty text check (proposed_difficulty in ('easy', 'medium', 'hard')),
+  proposed_metadata jsonb not null default '{}'::jsonb,
   question_snapshot jsonb not null default '{}'::jsonb,
   admin_note text,
   reviewed_by uuid references auth.users(id) on delete set null,
   reviewed_at timestamptz,
   created_at timestamptz not null default timezone('utc', now())
 );
+
+alter table public.question_moderation_requests
+  add column if not exists proposed_metadata jsonb not null default '{}'::jsonb;
 
 create table if not exists public.user_question_progress (
   user_id uuid not null references auth.users(id) on delete cascade,

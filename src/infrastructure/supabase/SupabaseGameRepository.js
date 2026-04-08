@@ -14,6 +14,10 @@ function sanitizeAnswerList(answer, acceptedAnswers = []) {
   return [...new Set([answer, ...(acceptedAnswers ?? [])].map((value) => String(value ?? "").trim()).filter(Boolean))];
 }
 
+function sanitizeChoiceList(values = []) {
+  return [...new Set((values ?? []).map((value) => String(value ?? "").trim()).filter(Boolean))];
+}
+
 function slugify(value) {
   return String(value ?? "")
     .normalize("NFD")
@@ -121,6 +125,7 @@ export class SupabaseGameRepository {
         proposed_answer,
         proposed_accepted_answers,
         proposed_difficulty,
+        proposed_metadata,
         question_snapshot,
         admin_note,
         reviewed_by,
@@ -174,11 +179,21 @@ export class SupabaseGameRepository {
   async submitNewQuestionSuggestion({
     reason,
     prompt,
+    questionType,
     answer,
     acceptedAnswers,
+    distractors,
     difficulty
   }) {
     this.#assertAuthenticated();
+
+    const proposedMetadata =
+      questionType === "mcq"
+        ? {
+            answerMode: "mcq",
+            distractors: sanitizeChoiceList(distractors)
+          }
+        : {};
 
     const { error } = await this.client.from("question_moderation_requests").insert({
       requester_user_id: this.userId,
@@ -189,6 +204,7 @@ export class SupabaseGameRepository {
       proposed_answer: answer.trim(),
       proposed_accepted_answers: sanitizeAnswerList(answer, acceptedAnswers),
       proposed_difficulty: difficulty,
+      proposed_metadata: proposedMetadata,
       question_snapshot: {}
     });
 
@@ -224,6 +240,7 @@ export class SupabaseGameRepository {
         proposed_answer,
         proposed_accepted_answers,
         proposed_difficulty,
+        proposed_metadata,
         requester_nickname
       `)
       .eq("id", requestId)
@@ -268,6 +285,7 @@ export class SupabaseGameRepository {
             request.proposed_accepted_answers ?? []
           ),
           metadata: {
+            ...(request.proposed_metadata ?? {}),
             source: "community-suggestion",
             requestId: request.id,
             requesterNickname: request.requester_nickname

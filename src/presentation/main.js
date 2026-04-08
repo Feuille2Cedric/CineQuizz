@@ -49,6 +49,8 @@ const dom = {
   questionProgress: document.getElementById("question-progress"),
   questionText: document.getElementById("question-text"),
   answerForm: document.getElementById("answer-form"),
+  answerInputBlock: document.getElementById("answer-input-block"),
+  answerInputLabel: document.getElementById("answer-input-label"),
   answerInput: document.getElementById("answer-input"),
   answerChoiceGroup: document.getElementById("answer-choice-group"),
   answerSubmitButton: document.querySelector('#answer-form button[type="submit"]'),
@@ -78,8 +80,11 @@ const dom = {
   questionFeedbackSubmit: document.getElementById("question-feedback-submit"),
   newQuestionForm: document.getElementById("new-question-form"),
   newQuestionPrompt: document.getElementById("new-question-prompt"),
+  newQuestionType: document.getElementById("new-question-type"),
   newQuestionAnswer: document.getElementById("new-question-answer"),
   newQuestionAliases: document.getElementById("new-question-aliases"),
+  newQuestionMcqFields: document.getElementById("new-question-mcq-fields"),
+  newQuestionDistractors: document.getElementById("new-question-distractors"),
   newQuestionDifficulty: document.getElementById("new-question-difficulty"),
   newQuestionReason: document.getElementById("new-question-reason"),
   newQuestionSubmit: document.getElementById("new-question-submit"),
@@ -178,6 +183,11 @@ function serializeModerationRequests(requests) {
       const snapshotPrompt = request.question_snapshot?.prompt;
       const prompt = request.proposed_prompt ?? snapshotPrompt ?? "Question non renseignee";
       const answer = request.proposed_answer ?? request.question_snapshot?.answer ?? "Non renseignee";
+      const proposedMetadata = request.proposed_metadata ?? {};
+      const isMcq = proposedMetadata.answerMode === "mcq";
+      const distractors = Array.isArray(proposedMetadata.distractors)
+        ? proposedMetadata.distractors
+        : [];
       const difficulty =
         request.proposed_difficulty ??
         request.question_snapshot?.difficulty ??
@@ -202,7 +212,13 @@ function serializeModerationRequests(requests) {
           <div class="request-body">
             <p><strong>Question cible:</strong> ${escapeHtml(request.question_id ?? "nouvelle question")}</p>
             <p><strong>Difficulte:</strong> ${escapeHtml(difficulty)}</p>
+            <p><strong>Type:</strong> ${isMcq ? "QCM" : "Question normale"}</p>
             <p><strong>Reponse:</strong> ${escapeHtml(answer)}</p>
+            ${
+              distractors.length
+                ? `<p><strong>Fausses reponses:</strong> ${escapeHtml(distractors.join(" | "))}</p>`
+                : ""
+            }
             <p><strong>Motif:</strong> ${escapeHtml(request.reason || "Aucun detail")}</p>
             ${
               request.admin_note
@@ -264,6 +280,9 @@ function renderAnswerChoices(viewModel) {
   const selectedChoice = dom.answerForm.dataset.selectedChoice ?? "";
 
   dom.answerChoiceGroup.classList.toggle("is-hidden", !isMcq);
+  dom.answerInputBlock.classList.toggle("is-hidden", isMcq);
+  dom.answerInputBlock.hidden = isMcq;
+  dom.answerInputLabel.setAttribute("aria-hidden", String(isMcq));
   dom.answerInput.classList.toggle("is-hidden", isMcq);
 
   if (!isMcq) {
@@ -408,6 +427,12 @@ function fillContributionEditForm(question, canRevealAnswer = false) {
 function syncContributionMode() {
   const wantsEdit = dom.questionFeedbackType.value === "edit";
   dom.feedbackEditFields.classList.toggle("is-hidden", !wantsEdit);
+}
+
+function syncNewQuestionMode() {
+  const isMcq = dom.newQuestionType.value === "mcq";
+  dom.newQuestionMcqFields.classList.toggle("is-hidden", !isMcq);
+  dom.newQuestionDistractors.disabled = dom.newQuestionType.disabled || !isMcq;
 }
 
 function render(viewModel) {
@@ -583,11 +608,13 @@ function render(viewModel) {
   dom.feedbackDifficulty.disabled = !canContribute;
   dom.questionFeedbackSubmit.disabled = !canContribute || !viewModel.currentQuestion;
   dom.newQuestionPrompt.disabled = !canContribute;
+  dom.newQuestionType.disabled = !canContribute;
   dom.newQuestionAnswer.disabled = !canContribute;
   dom.newQuestionAliases.disabled = !canContribute;
   dom.newQuestionDifficulty.disabled = !canContribute;
   dom.newQuestionReason.disabled = !canContribute;
   dom.newQuestionSubmit.disabled = !canContribute;
+  syncNewQuestionMode();
 
   if (!viewModel.currentQuestion) {
     dom.contributionQuestionMeta.textContent = "Aucune question active.";
@@ -688,6 +715,7 @@ async function main() {
   }
 
   syncContributionMode();
+  syncNewQuestionMode();
   renderAuthMode();
   dom.authForm.dataset.mode = uiState.authMode;
 
@@ -912,6 +940,10 @@ async function main() {
     }
   });
 
+  dom.newQuestionType.addEventListener("change", () => {
+    syncNewQuestionMode();
+  });
+
   dom.questionFeedbackForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -953,9 +985,14 @@ async function main() {
     try {
       const result = await app.submitNewQuestionSuggestion({
         prompt: dom.newQuestionPrompt.value,
+        questionType: dom.newQuestionType.value,
         answer: dom.newQuestionAnswer.value,
         aliases: dom.newQuestionAliases.value
           .split(",")
+          .map((value) => value.trim())
+          .filter(Boolean),
+        distractors: dom.newQuestionDistractors.value
+          .split(/\r?\n/)
           .map((value) => value.trim())
           .filter(Boolean),
         difficulty: dom.newQuestionDifficulty.value,
@@ -964,7 +1001,9 @@ async function main() {
 
       render(result);
       dom.newQuestionForm.reset();
+      dom.newQuestionType.value = "text";
       dom.newQuestionDifficulty.value = "medium";
+      syncNewQuestionMode();
       dom.dataMessage.textContent = "Nouvelle question envoyee a l'administration.";
     } catch (error) {
       reportUiError(error);

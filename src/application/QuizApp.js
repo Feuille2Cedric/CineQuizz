@@ -349,7 +349,15 @@ export class QuizApp {
     return this.getViewModel();
   }
 
-  async submitNewQuestionSuggestion({ prompt, answer, aliases, difficulty, reason }) {
+  async submitNewQuestionSuggestion({
+    prompt,
+    questionType,
+    answer,
+    aliases,
+    distractors,
+    difficulty,
+    reason
+  }) {
     this.#assertCanUseSupabaseProfile();
 
     if (typeof this.gameRepository.submitNewQuestionSuggestion !== "function") {
@@ -360,10 +368,16 @@ export class QuizApp {
       throw new Error("Une nouvelle question doit contenir une question et une reponse.");
     }
 
+    if (questionType === "mcq" && (distractors ?? []).length < 2) {
+      throw new Error("Un QCM doit contenir au moins 2 fausses reponses.");
+    }
+
     await this.gameRepository.submitNewQuestionSuggestion({
       prompt,
+      questionType,
       answer,
       acceptedAnswers: aliases,
+      distractors,
       difficulty,
       reason
     });

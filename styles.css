@@ -707,6 +707,12 @@ button {
   display: none;
 }
 
+#answer-form .answer-input-block.is-hidden,
+#answer-form .answer-input-block[hidden],
+#answer-form #answer-input.is-hidden {
+  display: none !important;
+}
+
 .stats-card h2,
 .section-heading h2,
 .data-card h3,

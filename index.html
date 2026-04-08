@@ -190,13 +190,15 @@
               </p>
 
               <form id="answer-form" class="answer-form">
-                <label for="answer-input">Votre reponse</label>
-                <textarea
-                  id="answer-input"
-                  name="answer"
-                  rows="3"
-                  placeholder="Tapez votre reponse ici"
-                ></textarea>
+                <div id="answer-input-block" class="answer-input-block">
+                  <label id="answer-input-label" for="answer-input">Votre reponse</label>
+                  <textarea
+                    id="answer-input"
+                    name="answer"
+                    rows="3"
+                    placeholder="Tapez votre reponse ici"
+                  ></textarea>
+                </div>
                 <div id="answer-choice-group" class="answer-choice-group is-hidden"></div>
                 <div class="action-row">
                   <button type="submit" class="primary-button">Valider</button>
@@ -343,6 +345,12 @@
                   <label for="new-question-prompt">Question</label>
                   <textarea id="new-question-prompt" name="prompt" rows="3"></textarea>
 
+                  <label for="new-question-type">Type de question</label>
+                  <select id="new-question-type" name="questionType">
+                    <option value="text">Question normale</option>
+                    <option value="mcq">QCM</option>
+                  </select>
+
                   <label for="new-question-answer">Bonne reponse</label>
                   <input id="new-question-answer" name="answer" type="text" />
 
@@ -353,6 +361,16 @@
                     type="text"
                     placeholder="Separer par des virgules"
                   />
+
+                  <div id="new-question-mcq-fields" class="contribution-fields is-hidden">
+                    <label for="new-question-distractors">Fausses reponses</label>
+                    <textarea
+                      id="new-question-distractors"
+                      name="distractors"
+                      rows="4"
+                      placeholder="Une fausse reponse par ligne"
+                    ></textarea>
+                  </div>
 
                   <label for="new-question-difficulty">Difficulte</label>
                   <select id="new-question-difficulty" name="difficulty">
