@@ -331,16 +331,21 @@ export class SupabaseGameRepository {
       throw new Error(`Connexion impossible: ${error.message}`);
     }
 
-    return {
-      sessionState: await this.#buildAuthenticatedState(data.user)
-    };
+    try {
+      return {
+        sessionState: await this.#buildAuthenticatedState(data.user)
+      };
+    } catch (authSetupError) {
+      await this.client.auth.signOut();
+      throw authSetupError;
+    }
   }
 
   async signUp({ email, password, preferredNickname }) {
     const nickname = this.#resolveNickname(preferredNickname);
     await this.#assertNicknameAvailable(nickname);
     const { data, error } = await this.client.auth.signUp({
-      email,
+      email: email.trim().toLowerCase(),
       password,
       options: {
         data: {
@@ -354,10 +359,15 @@ export class SupabaseGameRepository {
     }
 
     if (data.session?.user) {
-      return {
-        sessionState: await this.#buildAuthenticatedState(data.session.user, nickname),
-        message: "Compte cree et connecte."
-      };
+      try {
+        return {
+          sessionState: await this.#buildAuthenticatedState(data.session.user, nickname),
+          message: "Compte cree et connecte."
+        };
+      } catch (authSetupError) {
+        await this.client.auth.signOut();
+        throw authSetupError;
+      }
     }
 
     this.userId = null;

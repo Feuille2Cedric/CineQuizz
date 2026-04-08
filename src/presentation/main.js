@@ -104,6 +104,10 @@ const uiState = {
 
 const RUNTIME_PREFERENCE_KEY = "cinequizz:runtime-preference";
 
+function looksLikeEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value ?? "").trim());
+}
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -574,6 +578,16 @@ async function main() {
 
       if (action === "sign-up" && !preferredNickname) {
         dom.authStatus.textContent = "Le pseudo est requis pour creer un compte.";
+        return;
+      }
+
+      if (action === "sign-up" && preferredNickname.length < 3) {
+        dom.authStatus.textContent = "Le pseudo doit faire au moins 3 caracteres.";
+        return;
+      }
+
+      if (action === "sign-up" && !looksLikeEmail(identifier)) {
+        dom.authStatus.textContent = "Un e-mail valide est requis pour creer un compte.";
         return;
       }
 
