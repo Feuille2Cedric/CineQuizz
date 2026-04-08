@@ -281,7 +281,7 @@ button {
 
 .nickname-form input,
 .auth-form input,
-.answer-form .answer-input,
+.answer-form textarea,
 .edit-form input,
 .edit-form textarea,
 .edit-form select {
@@ -293,10 +293,9 @@ button {
   color: var(--text);
 }
 
-.answer-form .answer-input {
+.answer-form textarea {
   display: block;
-  min-height: 56px;
-  height: 56px;
+  min-height: 84px;
   padding: 14px 16px;
   font-family: var(--font-ui);
   font-size: 1rem;
@@ -318,7 +317,7 @@ button {
     box-shadow 180ms ease;
 }
 
-.answer-form .answer-input:focus {
+.answer-form textarea:focus {
   outline: none;
   border-color: rgba(191, 75, 40, 0.45);
   box-shadow:
@@ -326,12 +325,12 @@ button {
     inset 0 0 0 1px rgba(191, 75, 40, 0.12);
 }
 
-.answer-form .answer-input::placeholder {
+.answer-form textarea::placeholder {
   color: rgba(109, 88, 72, 0.75);
   -webkit-text-fill-color: rgba(109, 88, 72, 0.75);
 }
 
-.answer-form .answer-input.is-correct {
+.answer-form textarea.is-correct {
   border-color: rgba(24, 121, 78, 0.42);
   background: rgba(24, 121, 78, 0.1);
   color: var(--text);
@@ -340,7 +339,7 @@ button {
   box-shadow: inset 0 0 0 1px rgba(24, 121, 78, 0.14);
 }
 
-.answer-form .answer-input.is-wrong {
+.answer-form textarea.is-wrong {
   border-color: rgba(148, 37, 37, 0.4);
   background: rgba(148, 37, 37, 0.08);
   color: var(--text);
