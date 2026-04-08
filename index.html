@@ -27,24 +27,24 @@
             <h2 class="auth-title">Ouvrir l’application</h2>
 
             <form id="auth-form" class="auth-form">
-              <label for="auth-nickname-input">Pseudo</label>
+              <label for="auth-nickname-input">Pseudo public pour l'inscription</label>
               <input
                 id="auth-nickname-input"
                 name="nickname"
                 type="text"
                 minlength="3"
                 maxlength="24"
-                placeholder="Votre pseudo public"
+                placeholder="Requis uniquement a l'inscription"
                 autocomplete="nickname"
               />
 
-              <label for="auth-email-input">E-mail</label>
+              <label for="auth-email-input">E-mail ou pseudo</label>
               <input
                 id="auth-email-input"
-                name="email"
-                type="email"
-                placeholder="vous@example.com"
-                autocomplete="email"
+                name="identifier"
+                type="text"
+                placeholder="vous@example.com ou votre pseudo"
+                autocomplete="username"
               />
 
               <label for="auth-password-input">Mot de passe</label>

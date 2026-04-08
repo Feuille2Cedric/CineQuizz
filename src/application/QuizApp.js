@@ -151,8 +151,8 @@ export class QuizApp {
     return this.getViewModel();
   }
 
-  async signIn({ email, password, preferredNickname }) {
-    const result = await this.gameRepository.signIn({ email, password, preferredNickname });
+  async signIn({ identifier, password }) {
+    const result = await this.gameRepository.signIn({ identifier, password });
     await this.#applySessionState(result.sessionState);
     this.pickNextQuestion();
     return {

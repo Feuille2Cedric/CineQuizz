@@ -552,12 +552,12 @@ async function main() {
 
     try {
       const action = event.submitter?.dataset.authAction;
-      const email = dom.authEmailInput.value.trim();
+      const identifier = dom.authEmailInput.value.trim();
       const password = dom.authPasswordInput.value;
-      const preferredNickname = dom.authNicknameInput.value.trim() || dom.nicknameInput.value.trim();
+      const preferredNickname = dom.authNicknameInput.value.trim();
 
-      if (!email) {
-        dom.authStatus.textContent = "L'e-mail est requis.";
+      if (!identifier) {
+        dom.authStatus.textContent = "L'e-mail ou le pseudo est requis.";
         return;
       }
 
@@ -566,10 +566,15 @@ async function main() {
         return;
       }
 
+      if (action === "sign-up" && !preferredNickname) {
+        dom.authStatus.textContent = "Le pseudo est requis pour creer un compte.";
+        return;
+      }
+
       const result =
         action === "sign-up"
-          ? await app.signUp({ email, password, preferredNickname })
-          : await app.signIn({ email, password, preferredNickname });
+          ? await app.signUp({ email: identifier, password, preferredNickname })
+          : await app.signIn({ identifier, password });
 
       uiState.entryDismissed = result.viewModel.auth.isAuthenticated;
       render(result.viewModel);

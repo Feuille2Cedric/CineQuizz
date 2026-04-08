@@ -36,6 +36,7 @@ export class SupabaseGameRepository {
 
   async updateNickname(nickname) {
     this.#assertAuthenticated();
+    await this.#assertNicknameAvailable(nickname, this.userId);
     await this.#upsertProfile(nickname.trim() || "Spectateur");
     this.profile = await this.#loadProfile();
     window.localStorage.setItem("cinequizz:last-nickname", this.profile.nickname);
@@ -311,7 +312,9 @@ export class SupabaseGameRepository {
     };
   }
 
-  async signIn({ email, password, preferredNickname }) {
+  async signIn({ identifier, password }) {
+    const email = await this.#resolveEmailForIdentifier(identifier);
+
     const { data, error } = await this.client.auth.signInWithPassword({
       email,
       password
@@ -322,12 +325,13 @@ export class SupabaseGameRepository {
     }
 
     return {
-      sessionState: await this.#buildAuthenticatedState(data.user, preferredNickname)
+      sessionState: await this.#buildAuthenticatedState(data.user)
     };
   }
 
   async signUp({ email, password, preferredNickname }) {
     const nickname = this.#resolveNickname(preferredNickname);
+    await this.#assertNicknameAvailable(nickname);
     const { data, error } = await this.client.auth.signUp({
       email,
       password,
@@ -382,9 +386,7 @@ export class SupabaseGameRepository {
 
   async #buildAuthenticatedState(user, preferredNickname) {
     this.userId = user.id;
-
-    await this.#upsertProfile(this.#resolveNickname(preferredNickname, user));
-    this.profile = await this.#loadProfile();
+    this.profile = await this.#ensureProfile(this.#resolveNickname(preferredNickname, user), user);
     window.localStorage.setItem("cinequizz:last-nickname", this.profile.nickname);
 
     return {
@@ -457,11 +459,22 @@ export class SupabaseGameRepository {
     );
 
     if (error) {
-      throw new Error(`Mise a jour du pseudo impossible: ${error.message}`);
+      throw new Error(this.#formatProfileError(error, "Mise a jour du pseudo impossible"));
     }
   }
 
-  async #loadProfile() {
+  async #createProfile(nickname) {
+    const { error } = await this.client.from("profiles").insert({
+      user_id: this.userId,
+      nickname
+    });
+
+    if (error) {
+      throw new Error(this.#formatProfileError(error, "Creation du profil impossible"));
+    }
+  }
+
+  async #loadProfile({ allowMissing = false } = {}) {
     const { data, error } = await this.client
       .from("profiles")
       .select("user_id,nickname,is_admin,total_correct,total_answered")
@@ -469,6 +482,10 @@ export class SupabaseGameRepository {
       .single();
 
     if (error) {
+      if (allowMissing && error.code === "PGRST116") {
+        return null;
+      }
+
       throw new Error(`Chargement du profil impossible: ${error.message}`);
     }
 
@@ -486,6 +503,79 @@ export class SupabaseGameRepository {
     }
 
     return (data ?? []).map((entry) => entry.question_id);
+  }
+
+  async #ensureProfile(preferredNickname, user) {
+    const existingProfile = await this.#loadProfile({ allowMissing: true });
+
+    if (existingProfile) {
+      return existingProfile;
+    }
+
+    const nickname = this.#resolveNickname(preferredNickname, user);
+    await this.#assertNicknameAvailable(nickname);
+    await this.#createProfile(nickname);
+    return this.#loadProfile();
+  }
+
+  async #assertNicknameAvailable(nickname, excludedUserId = null) {
+    const candidate = String(nickname ?? "").trim();
+
+    if (!candidate) {
+      throw new Error("Le pseudo est requis.");
+    }
+
+    const currentNickname = this.profile?.nickname;
+
+    if (
+      excludedUserId &&
+      currentNickname &&
+      currentNickname.trim().toLowerCase() === candidate.toLowerCase()
+    ) {
+      return;
+    }
+
+    const { data, error } = await this.client.rpc("is_nickname_available", {
+      p_nickname: candidate
+    });
+
+    if (error) {
+      throw new Error(`Verification du pseudo impossible: ${error.message}`);
+    }
+
+    if (!data) {
+      throw new Error("Ce pseudo est deja pris.");
+    }
+  }
+
+  async #resolveEmailForIdentifier(identifier) {
+    const candidate = String(identifier ?? "").trim();
+
+    if (!candidate) {
+      throw new Error("L'e-mail ou le pseudo est requis.");
+    }
+
+    const { data, error } = await this.client.rpc("resolve_sign_in_email", {
+      p_identifier: candidate
+    });
+
+    if (error) {
+      throw new Error(`Resolution de l'identifiant impossible: ${error.message}`);
+    }
+
+    if (!data) {
+      throw new Error("Aucun compte ne correspond a cet e-mail ou pseudo.");
+    }
+
+    return data;
+  }
+
+  #formatProfileError(error, fallbackMessage) {
+    if (error?.code === "23505" && error?.message?.includes("profiles_nickname_unique_idx")) {
+      return "Ce pseudo est deja pris.";
+    }
+
+    return `${fallbackMessage}: ${error.message}`;
   }
 
   #buildCommunityQuestionId(prompt) {
