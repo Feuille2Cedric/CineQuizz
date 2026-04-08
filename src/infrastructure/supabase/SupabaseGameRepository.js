@@ -432,7 +432,12 @@ export class SupabaseGameRepository {
       isAdmin: false,
       stats: {
         totalAnswered: 0,
-        totalCorrect: 0
+        totalCorrect: 0,
+        byDifficulty: {
+          easy: { correct: 0, answered: 0 },
+          medium: { correct: 0, answered: 0 },
+          hard: { correct: 0, answered: 0 }
+        }
       },
       answeredQuestionIds: [],
       mode: this.mode,
