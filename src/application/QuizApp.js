@@ -331,13 +331,29 @@ export class QuizApp {
       throw new Error("Merci d'expliquer votre demande.");
     }
 
-    if (type === "edit" && (!prompt.trim() || !answer.trim())) {
+    const isMcq = shouldUseMultipleChoice(currentQuestion);
+    const trimmedPrompt = prompt.trim();
+    const trimmedAnswer = answer.trim();
+    const effectivePrompt = type === "edit" ? trimmedPrompt || currentQuestion.prompt : null;
+    const effectiveAnswer = type === "edit" ? trimmedAnswer || currentQuestion.answer : null;
+    const effectiveAliases =
+      type === "edit" && !isMcq
+        ? trimmedAnswer
+          ? aliases
+          : currentQuestion.acceptedAnswers.slice(1)
+        : [];
+    const effectiveDistractors =
+      type === "edit" && isMcq
+        ? (distractors ?? []).length
+          ? distractors
+          : currentQuestion.metadata?.distractors ?? []
+        : [];
+
+    if (type === "edit" && (!effectivePrompt.trim() || !effectiveAnswer.trim())) {
       throw new Error("Une proposition de modification doit contenir une question et une reponse.");
     }
 
-    const isMcq = shouldUseMultipleChoice(currentQuestion);
-
-    if (type === "edit" && isMcq && (distractors ?? []).length < 2) {
+    if (type === "edit" && isMcq && effectiveDistractors.length < 2) {
       throw new Error("Une proposition de QCM doit contenir au moins 2 fausses reponses.");
     }
 
@@ -346,15 +362,15 @@ export class QuizApp {
       questionId,
       reason,
       questionSnapshot: currentQuestion.toJSON(),
-      proposedPrompt: type === "edit" ? prompt : null,
-      proposedAnswer: type === "edit" ? answer : null,
-      proposedAcceptedAnswers: type === "edit" && !isMcq ? aliases : [],
+      proposedPrompt: effectivePrompt,
+      proposedAnswer: effectiveAnswer,
+      proposedAcceptedAnswers: effectiveAliases,
       proposedDifficulty: type === "edit" ? difficulty : null,
       proposedMetadata:
         type === "edit" && isMcq
           ? {
               answerMode: "mcq",
-              distractors
+              distractors: effectiveDistractors
             }
           : {}
     });
@@ -396,6 +412,11 @@ export class QuizApp {
       reason
     });
 
+    await this.#refreshModerationRequests();
+    return this.getViewModel();
+  }
+
+  async refreshModerationRequests() {
     await this.#refreshModerationRequests();
     return this.getViewModel();
   }

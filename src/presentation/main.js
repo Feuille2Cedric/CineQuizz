@@ -428,6 +428,9 @@ function fillContributionEditForm(question, canRevealAnswer = false) {
   const isMcq = questionUsesMultipleChoice(question);
   dom.feedbackPrompt.value = question.prompt;
   dom.feedbackAnswer.value = canRevealAnswer ? question.answer : "";
+  dom.feedbackAnswer.placeholder = canRevealAnswer
+    ? ""
+    : "Reponse masquee tant que vous n'avez pas repondu. Laissez vide pour conserver la reponse actuelle.";
   dom.feedbackAliases.value = !isMcq && canRevealAnswer ? question.acceptedAnswers.slice(1).join(", ") : "";
   dom.feedbackDistractors.value = isMcq
     ? (question.metadata?.distractors ?? []).map((value) => String(value ?? "").trim()).filter(Boolean).join("\n")
@@ -855,7 +858,21 @@ async function main() {
   await bootApplication();
 
   dom.tabs.forEach((tabButton) => {
-    tabButton.addEventListener("click", () => activateTab(tabButton.dataset.tabTarget));
+    tabButton.addEventListener("click", async () => {
+      if (
+        tabButton.dataset.tabTarget === "admin-tab" &&
+        uiState.viewModel?.profile?.isAdmin &&
+        typeof app.refreshModerationRequests === "function"
+      ) {
+        try {
+          render(await app.refreshModerationRequests());
+        } catch (error) {
+          reportUiError(error);
+        }
+      }
+
+      activateTab(tabButton.dataset.tabTarget);
+    });
   });
 
   dom.difficultyButtons.forEach((button) => {
