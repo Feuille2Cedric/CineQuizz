@@ -82,6 +82,7 @@ const dom = {
   newQuestionPrompt: document.getElementById("new-question-prompt"),
   newQuestionType: document.getElementById("new-question-type"),
   newQuestionAnswer: document.getElementById("new-question-answer"),
+  newQuestionAliasesFields: document.getElementById("new-question-aliases-fields"),
   newQuestionAliases: document.getElementById("new-question-aliases"),
   newQuestionMcqFields: document.getElementById("new-question-mcq-fields"),
   newQuestionDistractors: document.getElementById("new-question-distractors"),
@@ -434,6 +435,8 @@ function syncContributionMode() {
 
 function syncNewQuestionMode() {
   const isMcq = dom.newQuestionType.value === "mcq";
+  dom.newQuestionAliasesFields.classList.toggle("is-hidden", isMcq);
+  dom.newQuestionAliases.disabled = dom.newQuestionType.disabled || isMcq;
   dom.newQuestionMcqFields.classList.toggle("is-hidden", !isMcq);
   dom.newQuestionDistractors.disabled = dom.newQuestionType.disabled || !isMcq;
 }
@@ -613,7 +616,6 @@ function render(viewModel) {
   dom.newQuestionPrompt.disabled = !canContribute;
   dom.newQuestionType.disabled = !canContribute;
   dom.newQuestionAnswer.disabled = !canContribute;
-  dom.newQuestionAliases.disabled = !canContribute;
   dom.newQuestionDifficulty.disabled = !canContribute;
   dom.newQuestionReason.disabled = !canContribute;
   dom.newQuestionSubmit.disabled = !canContribute;
