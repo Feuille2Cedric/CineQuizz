@@ -76,6 +76,59 @@ function answerWordCount(value) {
   return String(value ?? "").trim().split(/\s+/).filter(Boolean).length;
 }
 
+function normalizedWords(value) {
+  return normalizeText(value).split(/\s+/).filter(Boolean);
+}
+
+function sentenceLead(value, size = 2) {
+  return normalizedWords(value).slice(0, size).join(" ");
+}
+
+function questionStem(question, size = 4) {
+  return normalizedWords(question?.prompt ?? "").slice(0, size).join(" ");
+}
+
+function choiceScore(question, candidate) {
+  let score = 0;
+  const questionTemplate = question.metadata?.template ?? "";
+  const candidateTemplate = candidate.metadata?.template ?? "";
+  const questionLead = sentenceLead(question.answer, 2);
+  const candidateLead = sentenceLead(candidate.answer, 2);
+  const questionStemShort = questionStem(question, 2);
+  const candidateStemShort = questionStem(candidate, 2);
+  const questionStemLong = questionStem(question, 4);
+  const candidateStemLong = questionStem(candidate, 4);
+
+  if (candidate.difficulty === question.difficulty) {
+    score += 24;
+  }
+
+  if (questionTemplate && questionTemplate === candidateTemplate) {
+    score += 20;
+  }
+
+  if (shouldUseMultipleChoice(candidate)) {
+    score += 14;
+  }
+
+  if (questionStemShort && questionStemShort === candidateStemShort) {
+    score += 18;
+  }
+
+  if (questionStemLong && questionStemLong === candidateStemLong) {
+    score += 12;
+  }
+
+  if (questionLead && questionLead === candidateLead) {
+    score += 16;
+  }
+
+  score += Math.max(0, 18 - Math.abs(answerLength(candidate.answer) - answerLength(question.answer)) / 6);
+  score += Math.max(0, 12 - Math.abs(answerWordCount(candidate.answer) - answerWordCount(question.answer)) * 2);
+
+  return score;
+}
+
 export class QuizApp {
   constructor({ catalogRepository, patchRepository, gameRepository }) {
     this.catalogRepository = catalogRepository;
@@ -471,50 +524,26 @@ export class QuizApp {
     }
 
     const seen = new Set([normalizeChoiceKey(question.answer)]);
-    const targetLength = answerLength(question.answer);
-    const targetWords = answerWordCount(question.answer);
+    const rankedDistractors = this.state.questions
+      .filter((candidate) => candidate.id !== question.id)
+      .map((candidate) => ({
+        label: String(candidate.answer ?? "").trim(),
+        key: normalizeChoiceKey(candidate.answer),
+        score: choiceScore(question, candidate)
+      }))
+      .filter((candidate) => candidate.label && !seen.has(candidate.key))
+      .sort((left, right) => right.score - left.score || left.label.localeCompare(right.label, "fr"));
 
-    const collectDistractors = (predicate) => {
-      const values = [];
+    const distractors = [];
 
-      for (const candidate of shuffle(this.state.questions)) {
-        if (candidate.id === question.id || !predicate(candidate)) {
-          continue;
-        }
-
-        const label = String(candidate.answer ?? "").trim();
-        const key = normalizeChoiceKey(label);
-
-        if (!label || seen.has(key)) {
-          continue;
-        }
-
-        seen.add(key);
-        values.push(label);
-
-        if (values.length >= 3) {
-          break;
-        }
+    for (const candidate of rankedDistractors) {
+      if (distractors.length >= 3) {
+        break;
       }
 
-      return values;
-    };
-
-    const distractors = [
-      ...collectDistractors(
-        (candidate) =>
-          candidate.difficulty === question.difficulty &&
-          Math.abs(answerLength(candidate.answer) - targetLength) <= 35 &&
-          Math.abs(answerWordCount(candidate.answer) - targetWords) <= 6
-      ),
-      ...collectDistractors((candidate) => candidate.difficulty === question.difficulty),
-      ...collectDistractors(
-        (candidate) =>
-          Math.abs(answerLength(candidate.answer) - targetLength) <= 35 &&
-          Math.abs(answerWordCount(candidate.answer) - targetWords) <= 6
-      ),
-      ...collectDistractors(() => true)
-    ].slice(0, 3);
+      seen.add(candidate.key);
+      distractors.push(candidate.label);
+    }
 
     return shuffle([question.answer, ...distractors]);
   }
