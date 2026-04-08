@@ -88,7 +88,8 @@ export class QuizApp {
       stats: {
         ...this.state.profile.stats,
         accuracy: accuracyFromStats(this.state.profile.stats),
-        remaining: this.#getRemainingQuestionCount(this.state.difficulty)
+        remaining: this.#getRemainingQuestionCount(),
+        remainingForDifficulty: this.#getRemainingQuestionCount(this.state.difficulty)
       },
       catalogCounts: {
         ...difficultyCounts,
@@ -309,10 +310,10 @@ export class QuizApp {
     return this.pickNextQuestion().currentQuestion;
   }
 
-  #getRemainingQuestionCount(difficulty) {
+  #getRemainingQuestionCount(difficulty = null) {
     return this.state.questions.filter(
       (question) =>
-        question.difficulty === difficulty &&
+        (difficulty ? question.difficulty === difficulty : true) &&
         !this.state.answeredQuestionIds.has(question.id)
     ).length;
   }

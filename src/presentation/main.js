@@ -210,7 +210,7 @@ function render(viewModel) {
   dom.questionDifficulty.textContent = difficultyLabel(viewModel.difficulty);
   dom.questionProgress.textContent = requiresAuth
     ? "Connexion requise pour jouer en mode Supabase"
-    : `${viewModel.stats.remaining} question(s) restante(s) sur cette difficulte`;
+    : `${viewModel.stats.remainingForDifficulty} question(s) restante(s) sur cette difficulte`;
   dom.editToggleButton.classList.toggle("is-hidden", !canEditQuestion);
   dom.editToggleButton.textContent = uiState.editPanelOpen
     ? "Masquer l'editeur"
