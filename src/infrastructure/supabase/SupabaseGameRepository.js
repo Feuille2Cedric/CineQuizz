@@ -32,6 +32,11 @@ function looksLikeEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value ?? "").trim());
 }
 
+function isMissingModerationMetadataColumn(error) {
+  const message = String(error?.message ?? "");
+  return /question_moderation_requests\.proposed_metadata/i.test(message) && /does not exist/i.test(message);
+}
+
 export class SupabaseGameRepository {
   constructor(client) {
     this.client = client;
@@ -111,7 +116,7 @@ export class SupabaseGameRepository {
       return [];
     }
 
-    const { data, error } = await this.client
+    const query = this.client
       .from("question_moderation_requests")
       .select(`
         id,
@@ -133,6 +138,41 @@ export class SupabaseGameRepository {
         created_at
       `)
       .order("created_at", { ascending: false });
+
+    const { data, error } = await query;
+
+    if (error && isMissingModerationMetadataColumn(error)) {
+      const fallback = await this.client
+        .from("question_moderation_requests")
+        .select(`
+          id,
+          requester_user_id,
+          requester_nickname,
+          question_id,
+          request_type,
+          status,
+          reason,
+          proposed_prompt,
+          proposed_answer,
+          proposed_accepted_answers,
+          proposed_difficulty,
+          question_snapshot,
+          admin_note,
+          reviewed_by,
+          reviewed_at,
+          created_at
+        `)
+        .order("created_at", { ascending: false });
+
+      if (fallback.error) {
+        throw new Error(`Chargement des demandes admin impossible: ${fallback.error.message}`);
+      }
+
+      return (fallback.data ?? []).map((request) => ({
+        ...request,
+        proposed_metadata: {}
+      }));
+    }
 
     if (error) {
       throw new Error(`Chargement des demandes admin impossible: ${error.message}`);
@@ -195,7 +235,7 @@ export class SupabaseGameRepository {
           }
         : {};
 
-    const { error } = await this.client.from("question_moderation_requests").insert({
+    const payload = {
       requester_user_id: this.userId,
       requester_nickname: this.profile?.nickname ?? "Spectateur",
       request_type: "new",
@@ -206,7 +246,35 @@ export class SupabaseGameRepository {
       proposed_difficulty: difficulty,
       proposed_metadata: proposedMetadata,
       question_snapshot: {}
-    });
+    };
+
+    const { error } = await this.client.from("question_moderation_requests").insert(payload);
+
+    if (error && isMissingModerationMetadataColumn(error)) {
+      if (questionType === "mcq") {
+        throw new Error(
+          "La base Supabase n'a pas encore la colonne proposed_metadata. Appliquez admin_moderation.sql avant de proposer des QCM."
+        );
+      }
+
+      const fallback = await this.client.from("question_moderation_requests").insert({
+        requester_user_id: this.userId,
+        requester_nickname: this.profile?.nickname ?? "Spectateur",
+        request_type: "new",
+        reason: reason.trim(),
+        proposed_prompt: prompt.trim(),
+        proposed_answer: answer.trim(),
+        proposed_accepted_answers: sanitizeAnswerList(answer, acceptedAnswers),
+        proposed_difficulty: difficulty,
+        question_snapshot: {}
+      });
+
+      if (fallback.error) {
+        throw new Error(`Envoi de la nouvelle question impossible: ${fallback.error.message}`);
+      }
+
+      return;
+    }
 
     if (error) {
       throw new Error(`Envoi de la nouvelle question impossible: ${error.message}`);
@@ -229,7 +297,7 @@ export class SupabaseGameRepository {
   async reviewModerationRequest({ requestId, decision, adminNote = "" }) {
     this.#assertAdmin();
 
-    const { data: request, error: requestError } = await this.client
+    const requestQuery = this.client
       .from("question_moderation_requests")
       .select(`
         id,
@@ -245,6 +313,34 @@ export class SupabaseGameRepository {
       `)
       .eq("id", requestId)
       .single();
+
+    let { data: request, error: requestError } = await requestQuery;
+
+    if (requestError && isMissingModerationMetadataColumn(requestError)) {
+      const fallback = await this.client
+        .from("question_moderation_requests")
+        .select(`
+          id,
+          question_id,
+          request_type,
+          status,
+          proposed_prompt,
+          proposed_answer,
+          proposed_accepted_answers,
+          proposed_difficulty,
+          requester_nickname
+        `)
+        .eq("id", requestId)
+        .single();
+
+      request = fallback.data
+        ? {
+            ...fallback.data,
+            proposed_metadata: {}
+          }
+        : null;
+      requestError = fallback.error;
+    }
 
     if (requestError) {
       throw new Error(`Chargement de la demande impossible: ${requestError.message}`);
