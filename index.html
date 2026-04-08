@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CineQuizz</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./config.js"></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Quiz cinema deployable sur GitHub Pages</p>
+          <h1>CineQuizz</h1>
+          <p class="hero-copy">
+            Reponse libre, difficulte selectable, suivi des bonnes reponses,
+            corrections locales et classement Supabase.
+          </p>
+        </div>
+        <div class="hero-panel">
+          <p id="storage-mode" class="mode-pill">Mode local</p>
+          <p id="sync-status" class="sync-status">
+            Configurez Supabase dans <code>config.js</code> pour activer le
+            classement global.
+          </p>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="main-column">
+          <nav class="tabs" aria-label="Navigation principale">
+            <button class="tab is-active" data-tab-target="quiz-tab">Quiz</button>
+            <button class="tab" data-tab-target="leaderboard-tab">Classement</button>
+            <button class="tab" data-tab-target="data-tab">Donnees</button>
+          </nav>
+
+          <section id="quiz-tab" class="tab-panel is-active">
+            <div class="toolbar">
+              <div class="difficulty-switch" role="group" aria-label="Difficulte">
+                <button class="difficulty-button is-active" data-difficulty="easy">
+                  Facile
+                </button>
+                <button class="difficulty-button" data-difficulty="medium">
+                  Moyen
+                </button>
+                <button class="difficulty-button" data-difficulty="hard">
+                  Difficile
+                </button>
+              </div>
+
+              <form id="nickname-form" class="nickname-form">
+                <label for="nickname-input">Pseudo</label>
+                <input
+                  id="nickname-input"
+                  name="nickname"
+                  type="text"
+                  minlength="3"
+                  maxlength="24"
+                  placeholder="Votre pseudo"
+                  autocomplete="nickname"
+                />
+                <button type="submit" class="ghost-button">Sauvegarder</button>
+              </form>
+            </div>
+
+            <article class="question-card">
+              <div class="question-header">
+                <p id="question-difficulty" class="question-tag">Facile</p>
+                <p id="question-progress" class="question-meta">Chargement...</p>
+              </div>
+              <h2 id="question-text" class="question-text">
+                Chargement de la question...
+              </h2>
+              <p id="question-hint" class="question-hint">
+                Les reponses sont verifiees sans tenir compte de la casse.
+              </p>
+
+              <form id="answer-form" class="answer-form">
+                <label for="answer-input">Votre reponse</label>
+                <textarea
+                  id="answer-input"
+                  name="answer"
+                  rows="3"
+                  placeholder="Tapez votre reponse ici"
+                ></textarea>
+                <div class="action-row">
+                  <button type="submit" class="primary-button">Valider</button>
+                  <button id="next-question-button" type="button" class="ghost-button">
+                    Question suivante
+                  </button>
+                </div>
+              </form>
+
+              <div id="answer-feedback" class="feedback" aria-live="polite"></div>
+
+              <section id="edit-panel" class="edit-panel is-hidden">
+                <div class="section-heading">
+                  <h3>Corriger cette question localement</h3>
+                  <p>
+                    La correction est conservee dans votre navigateur et peut
+                    ensuite etre exportee en JSON.
+                  </p>
+                </div>
+
+                <form id="edit-form" class="edit-form">
+                  <label for="edit-prompt">Question</label>
+                  <textarea id="edit-prompt" name="prompt" rows="3"></textarea>
+
+                  <label for="edit-answer">Bonne reponse</label>
+                  <input id="edit-answer" name="answer" type="text" />
+
+                  <label for="edit-aliases">
+                    Reponses acceptees supplementaires
+                  </label>
+                  <input
+                    id="edit-aliases"
+                    name="aliases"
+                    type="text"
+                    placeholder="Separer par des virgules"
+                  />
+
+                  <label for="edit-difficulty">Difficulte</label>
+                  <select id="edit-difficulty" name="difficulty">
+                    <option value="easy">Facile</option>
+                    <option value="medium">Moyen</option>
+                    <option value="hard">Difficile</option>
+                  </select>
+
+                  <div class="action-row">
+                    <button type="submit" class="primary-button">
+                      Enregistrer la correction
+                    </button>
+                    <button id="clear-override-button" type="button" class="ghost-button">
+                      Supprimer la correction locale
+                    </button>
+                  </div>
+                </form>
+              </section>
+            </article>
+          </section>
+
+          <section id="leaderboard-tab" class="tab-panel">
+            <div class="section-heading">
+              <h2>Classement</h2>
+              <p>Le classement affiche les profils tries par bonnes reponses.</p>
+            </div>
+            <div class="leaderboard-shell">
+              <table class="leaderboard-table">
+                <thead>
+                  <tr>
+                    <th>Rang</th>
+                    <th>Pseudo</th>
+                    <th>Bonnes</th>
+                    <th>Reponses</th>
+                    <th>Precision</th>
+                  </tr>
+                </thead>
+                <tbody id="leaderboard-body"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section id="data-tab" class="tab-panel">
+            <div class="section-heading">
+              <h2>Donnees</h2>
+              <p>
+                Le catalogue principal est genere a partir de JSON locaux. Vous
+                pouvez aussi importer un pack temporaire dans ce navigateur.
+              </p>
+            </div>
+
+            <div class="data-grid">
+              <article class="data-card">
+                <h3>Importer un pack JSON</h3>
+                <p>
+                  Format attendu: un tableau de questions ou un objet avec une
+                  cle <code>questions</code>.
+                </p>
+                <input id="question-pack-input" type="file" accept=".json,application/json" />
+              </article>
+
+              <article class="data-card">
+                <h3>Exporter les corrections locales</h3>
+                <p>Recuperez vos corrections pour les reintegrer au depot.</p>
+                <button id="export-overrides-button" type="button" class="primary-button">
+                  Exporter en JSON
+                </button>
+              </article>
+
+              <article class="data-card">
+                <h3>Nettoyer les donnees locales</h3>
+                <p>
+                  Supprime les imports JSON temporaires et les corrections locales.
+                </p>
+                <button id="reset-custom-data-button" type="button" class="ghost-button danger-button">
+                  Reinitialiser
+                </button>
+              </article>
+            </div>
+
+            <pre id="data-message" class="data-message"></pre>
+          </section>
+        </section>
+
+        <aside class="sidebar">
+          <section class="stats-card">
+            <h2>Statistiques</h2>
+            <dl class="stats-grid">
+              <div>
+                <dt>Bonnes reponses</dt>
+                <dd id="stat-correct">0</dd>
+              </div>
+              <div>
+                <dt>Total repondu</dt>
+                <dd id="stat-answered">0</dd>
+              </div>
+              <div>
+                <dt>Precision</dt>
+                <dd id="stat-accuracy">0%</dd>
+              </div>
+              <div>
+                <dt>Restantes</dt>
+                <dd id="stat-remaining">0</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="stats-card">
+            <h2>Catalogue</h2>
+            <dl class="stats-grid">
+              <div>
+                <dt>Facile</dt>
+                <dd id="catalog-easy">0</dd>
+              </div>
+              <div>
+                <dt>Moyen</dt>
+                <dd id="catalog-medium">0</dd>
+              </div>
+              <div>
+                <dt>Difficile</dt>
+                <dd id="catalog-hard">0</dd>
+              </div>
+              <div>
+                <dt>Total</dt>
+                <dd id="catalog-total">0</dd>
+              </div>
+            </dl>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <script type="module" src="./src/presentation/main.js"></script>
+  </body>
+</html>

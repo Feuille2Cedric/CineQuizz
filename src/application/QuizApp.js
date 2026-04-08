@@ -1,0 +1,258 @@
+import { Question } from "../domain/entities/Question.js";
+import { isCorrectAnswer, normalizeText } from "../domain/services/answerNormalizer.js";
+
+function accuracyFromStats(stats) {
+  if (!stats.totalAnswered) {
+    return 0;
+  }
+
+  return Math.round((stats.totalCorrect / stats.totalAnswered) * 100);
+}
+
+function toDifficultyLabel(difficulty) {
+  return {
+    easy: "Facile",
+    medium: "Moyen",
+    hard: "Difficile"
+  }[difficulty] ?? difficulty;
+}
+
+function dedupeQuestions(questions) {
+  const byId = new Map();
+
+  for (const question of questions) {
+    byId.set(question.id, question);
+  }
+
+  return [...byId.values()];
+}
+
+export class QuizApp {
+  constructor({ catalogRepository, patchRepository, gameRepository }) {
+    this.catalogRepository = catalogRepository;
+    this.patchRepository = patchRepository;
+    this.gameRepository = gameRepository;
+    this.state = {
+      difficulty: "easy",
+      profile: {
+        userId: null,
+        nickname: "Spectateur",
+        stats: {
+          totalAnswered: 0,
+          totalCorrect: 0
+        }
+      },
+      answeredQuestionIds: new Set(),
+      questions: [],
+      currentQuestion: null,
+      currentResult: null,
+      leaderboard: [],
+      mode: "local"
+    };
+  }
+
+  async initialize(preferredNickname) {
+    await this.#reloadQuestions();
+
+    const sessionState = await this.gameRepository.initialize(preferredNickname);
+    this.state.profile.userId = sessionState.userId;
+    this.state.profile.nickname = sessionState.nickname;
+    this.state.profile.stats = sessionState.stats;
+    this.state.answeredQuestionIds = new Set(sessionState.answeredQuestionIds);
+    this.state.mode = sessionState.mode;
+    this.state.leaderboard = await this.gameRepository.getLeaderboard();
+
+    this.pickNextQuestion();
+    return this.getViewModel();
+  }
+
+  getViewModel() {
+    const difficultyCounts = {
+      easy: 0,
+      medium: 0,
+      hard: 0
+    };
+
+    for (const question of this.state.questions) {
+      difficultyCounts[question.difficulty] += 1;
+    }
+
+    return {
+      mode: this.state.mode,
+      profile: this.state.profile,
+      difficulty: this.state.difficulty,
+      difficultyLabel: toDifficultyLabel(this.state.difficulty),
+      currentQuestion: this.state.currentQuestion,
+      currentResult: this.state.currentResult,
+      leaderboard: this.state.leaderboard,
+      stats: {
+        ...this.state.profile.stats,
+        accuracy: accuracyFromStats(this.state.profile.stats),
+        remaining: this.#getRemainingQuestionCount(this.state.difficulty)
+      },
+      catalogCounts: {
+        ...difficultyCounts,
+        total: this.state.questions.length
+      }
+    };
+  }
+
+  setDifficulty(difficulty) {
+    this.state.difficulty = difficulty;
+    this.state.currentResult = null;
+    this.pickNextQuestion();
+    return this.getViewModel();
+  }
+
+  async updateNickname(nickname) {
+    const result = await this.gameRepository.updateNickname(nickname);
+    this.state.profile.nickname = result.nickname;
+    this.state.profile.stats = result.stats;
+    this.state.leaderboard = await this.gameRepository.getLeaderboard();
+    return this.getViewModel();
+  }
+
+  async submitAnswer(rawAnswer) {
+    if (!this.state.currentQuestion) {
+      throw new Error("Aucune question active.");
+    }
+
+    const currentQuestion = this.state.currentQuestion;
+    const isCorrect = isCorrectAnswer(rawAnswer, currentQuestion.acceptedAnswers);
+    const normalizedAnswer = normalizeText(rawAnswer);
+
+    const registration = await this.gameRepository.registerAnswer({
+      questionId: currentQuestion.id,
+      difficulty: currentQuestion.difficulty,
+      isCorrect,
+      normalizedAnswer
+    });
+
+    if (registration.inserted) {
+      this.state.answeredQuestionIds.add(currentQuestion.id);
+      this.state.profile.stats = registration.stats;
+      this.state.leaderboard = await this.gameRepository.getLeaderboard();
+    }
+
+    this.state.currentResult = {
+      isCorrect,
+      expectedAnswer: currentQuestion.answer,
+      submittedAnswer: rawAnswer
+    };
+
+    return this.getViewModel();
+  }
+
+  pickNextQuestion() {
+    const pool = this.state.questions.filter(
+      (question) =>
+        question.difficulty === this.state.difficulty &&
+        !this.state.answeredQuestionIds.has(question.id)
+    );
+
+    if (!pool.length) {
+      this.state.currentQuestion = null;
+      return this.getViewModel();
+    }
+
+    const nextQuestion = pool[Math.floor(Math.random() * pool.length)];
+    this.state.currentQuestion = nextQuestion;
+    this.state.currentResult = null;
+    return this.getViewModel();
+  }
+
+  async saveQuestionOverride({ questionId, prompt, answer, aliases, difficulty }) {
+    const currentQuestion = this.#findQuestion(questionId);
+
+    if (!currentQuestion) {
+      throw new Error("Question introuvable.");
+    }
+
+    const acceptedAnswers = [answer, ...aliases]
+      .map((value) => String(value ?? "").trim())
+      .filter(Boolean);
+
+    this.patchRepository.saveOverride(questionId, {
+      prompt: prompt.trim(),
+      answer: answer.trim(),
+      acceptedAnswers,
+      difficulty
+    });
+
+    await this.#reloadQuestions();
+    this.state.currentQuestion = this.#findQuestion(questionId);
+    return this.getViewModel();
+  }
+
+  async clearQuestionOverride(questionId) {
+    this.patchRepository.removeOverride(questionId);
+    await this.#reloadQuestions();
+    this.state.currentQuestion = this.#findQuestion(questionId);
+    return this.getViewModel();
+  }
+
+  async importQuestionPack(jsonText) {
+    const payload = JSON.parse(jsonText);
+    const rawQuestions = Array.isArray(payload) ? payload : payload.questions;
+
+    if (!Array.isArray(rawQuestions)) {
+      throw new Error("Le JSON importe doit contenir un tableau de questions.");
+    }
+
+    this.patchRepository.saveImportedQuestions(rawQuestions);
+    await this.#reloadQuestions();
+    this.pickNextQuestion();
+
+    return {
+      importedCount: rawQuestions.length,
+      viewModel: this.getViewModel()
+    };
+  }
+
+  exportOverrides() {
+    return this.patchRepository.exportOverrides();
+  }
+
+  async resetLocalCustomData() {
+    this.patchRepository.clearAll();
+    await this.#reloadQuestions();
+    this.pickNextQuestion();
+    return this.getViewModel();
+  }
+
+  async #reloadQuestions() {
+    const baseQuestions = await this.catalogRepository.loadQuestions();
+    const importedQuestions = this.patchRepository.getImportedQuestions();
+    const overrides = this.patchRepository.getOverrides();
+
+    const mergedQuestions = dedupeQuestions([...baseQuestions, ...importedQuestions]).map((question) =>
+      this.#applyOverride(question, overrides[question.id])
+    );
+
+    this.state.questions = mergedQuestions;
+  }
+
+  #applyOverride(question, override) {
+    if (!override) {
+      return question;
+    }
+
+    return Question.fromPlain({
+      ...question.toJSON(),
+      ...override,
+      acceptedAnswers: override.acceptedAnswers ?? question.acceptedAnswers
+    });
+  }
+
+  #findQuestion(questionId) {
+    return this.state.questions.find((question) => question.id === questionId) ?? null;
+  }
+
+  #getRemainingQuestionCount(difficulty) {
+    return this.state.questions.filter(
+      (question) =>
+        question.difficulty === difficulty &&
+        !this.state.answeredQuestionIds.has(question.id)
+    ).length;
+  }
+}
