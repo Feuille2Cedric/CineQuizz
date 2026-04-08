@@ -33,8 +33,26 @@ function looksLikeEmail(value) {
 }
 
 function isMissingModerationMetadataColumn(error) {
-  const message = String(error?.message ?? "");
-  return /question_moderation_requests\.proposed_metadata/i.test(message) && /does not exist/i.test(message);
+  const diagnostic = JSON.stringify({
+    message: error?.message ?? "",
+    details: error?.details ?? "",
+    hint: error?.hint ?? "",
+    code: error?.code ?? ""
+  });
+
+  return (
+    /proposed_metadata/i.test(diagnostic) &&
+    (
+      /question_moderation_requests/i.test(diagnostic) ||
+      /schema cache/i.test(diagnostic) ||
+      /column/i.test(diagnostic)
+    ) &&
+    (
+      /does not exist/i.test(diagnostic) ||
+      /could not find/i.test(diagnostic) ||
+      /schema cache/i.test(diagnostic)
+    )
+  );
 }
 
 export class SupabaseGameRepository {
