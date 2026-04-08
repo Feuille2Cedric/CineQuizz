@@ -300,6 +300,7 @@ button {
   line-height: 1.45;
   color: var(--text);
   caret-color: var(--text);
+  color-scheme: light;
   resize: vertical;
   vertical-align: top;
   overflow-y: auto;
@@ -308,6 +309,14 @@ button {
     border-color 180ms ease,
     background 180ms ease,
     box-shadow 180ms ease;
+}
+
+.answer-form textarea:focus {
+  outline: none;
+  border-color: rgba(191, 75, 40, 0.45);
+  box-shadow:
+    0 0 0 3px rgba(191, 75, 40, 0.12),
+    inset 0 0 0 1px rgba(191, 75, 40, 0.12);
 }
 
 .answer-form textarea.is-correct {
