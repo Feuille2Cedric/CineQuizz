@@ -35,6 +35,39 @@ function dedupeQuestions(questions) {
   return [...byId.values()];
 }
 
+function shouldUseMultipleChoice(question) {
+  if (!question) {
+    return false;
+  }
+
+  if (question.metadata?.answerMode === "text") {
+    return false;
+  }
+
+  if (question.metadata?.answerMode === "mcq") {
+    return true;
+  }
+
+  const answerLength = String(question.answer ?? "").trim().length;
+  const answerWordCount = String(question.answer ?? "").trim().split(/\s+/).filter(Boolean).length;
+  return answerLength >= 90 || answerWordCount >= 14;
+}
+
+function shuffle(values) {
+  const copy = [...values];
+
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
+  }
+
+  return copy;
+}
+
+function normalizeChoiceKey(value) {
+  return String(value ?? "").trim().toLowerCase();
+}
+
 export class QuizApp {
   constructor({ catalogRepository, patchRepository, gameRepository }) {
     this.catalogRepository = catalogRepository;
@@ -59,6 +92,7 @@ export class QuizApp {
       answeredQuestionIds: new Set(),
       questions: [],
       currentQuestion: null,
+      currentChoices: [],
       currentResult: null,
       leaderboard: [],
       moderationRequests: [],
@@ -94,6 +128,8 @@ export class QuizApp {
       difficulty: this.state.difficulty,
       difficultyLabel: toDifficultyLabel(this.state.difficulty),
       currentQuestion: this.state.currentQuestion,
+      answerMode: shouldUseMultipleChoice(this.state.currentQuestion) ? "mcq" : "text",
+      currentChoices: this.state.currentChoices,
       currentResult: this.state.currentResult,
       canRevealCurrentAnswer: Boolean(this.state.currentResult),
       leaderboard: this.state.leaderboard,
@@ -114,6 +150,7 @@ export class QuizApp {
 
   setDifficulty(difficulty) {
     this.state.difficulty = difficulty;
+    this.state.currentChoices = [];
     this.state.currentResult = null;
     this.pickNextQuestion();
     return this.getViewModel();
@@ -287,12 +324,12 @@ export class QuizApp {
 
     if (!pool.length) {
       this.state.currentQuestion = null;
+      this.state.currentChoices = [];
       return this.getViewModel();
     }
 
     const nextQuestion = pool[Math.floor(Math.random() * pool.length)];
-    this.state.currentQuestion = nextQuestion;
-    this.state.currentResult = null;
+    this.#prepareCurrentQuestion(nextQuestion);
     return this.getViewModel();
   }
 
@@ -318,6 +355,7 @@ export class QuizApp {
     await this.#reloadQuestions();
     this.state.currentResult = null;
     this.state.currentQuestion = this.#resolveQuestionAfterEdition(questionId);
+    this.state.currentChoices = this.#buildAnswerChoices(this.state.currentQuestion);
     return this.getViewModel();
   }
 
@@ -327,6 +365,7 @@ export class QuizApp {
     await this.#reloadQuestions();
     this.state.currentResult = null;
     this.state.currentQuestion = this.#resolveQuestionAfterEdition(questionId);
+    this.state.currentChoices = this.#buildAnswerChoices(this.state.currentQuestion);
     return this.getViewModel();
   }
 
@@ -412,6 +451,40 @@ export class QuizApp {
     return this.pickNextQuestion().currentQuestion;
   }
 
+  #prepareCurrentQuestion(question) {
+    this.state.currentQuestion = question;
+    this.state.currentChoices = this.#buildAnswerChoices(question);
+    this.state.currentResult = null;
+  }
+
+  #buildAnswerChoices(question) {
+    if (!shouldUseMultipleChoice(question)) {
+      return [];
+    }
+
+    const distractorPool = [];
+    const seen = new Set([normalizeChoiceKey(question.answer)]);
+
+    for (const candidate of this.state.questions) {
+      if (candidate.id === question.id || candidate.difficulty !== question.difficulty) {
+        continue;
+      }
+
+      const label = String(candidate.answer ?? "").trim();
+      const key = normalizeChoiceKey(label);
+
+      if (!label || seen.has(key)) {
+        continue;
+      }
+
+      seen.add(key);
+      distractorPool.push(label);
+    }
+
+    const distractors = shuffle(distractorPool).slice(0, 3);
+    return shuffle([question.answer, ...distractors]);
+  }
+
   #getRemainingQuestionCount(difficulty = null) {
     return this.state.questions.filter(
       (question) =>
@@ -451,8 +524,7 @@ export class QuizApp {
     const refreshedQuestion = activeQuestionId ? this.#findQuestion(activeQuestionId) : null;
 
     if (refreshedQuestion && refreshedQuestion.difficulty === this.state.difficulty) {
-      this.state.currentQuestion = refreshedQuestion;
-      this.state.currentResult = null;
+      this.#prepareCurrentQuestion(refreshedQuestion);
       return;
     }
 

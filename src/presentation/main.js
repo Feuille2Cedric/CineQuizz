@@ -50,6 +50,7 @@ const dom = {
   questionText: document.getElementById("question-text"),
   answerForm: document.getElementById("answer-form"),
   answerInput: document.getElementById("answer-input"),
+  answerChoiceGroup: document.getElementById("answer-choice-group"),
   answerSubmitButton: document.querySelector('#answer-form button[type="submit"]'),
   nextQuestionButton: document.getElementById("next-question-button"),
   answerFeedback: document.getElementById("answer-feedback"),
@@ -254,6 +255,55 @@ function setAnswerFieldState(state = "") {
   }
 }
 
+function escapeAttribute(value) {
+  return String(value ?? "").replaceAll("&", "&amp;").replaceAll('"', "&quot;");
+}
+
+function renderAnswerChoices(viewModel) {
+  const isMcq = viewModel.answerMode === "mcq";
+  const selectedChoice = dom.answerForm.dataset.selectedChoice ?? "";
+
+  dom.answerChoiceGroup.classList.toggle("is-hidden", !isMcq);
+  dom.answerInput.classList.toggle("is-hidden", isMcq);
+
+  if (!isMcq) {
+    dom.answerChoiceGroup.innerHTML = "";
+    dom.answerForm.dataset.selectedChoice = "";
+    return;
+  }
+
+  dom.answerChoiceGroup.innerHTML = viewModel.currentChoices
+    .map((choice) => {
+      const isSelected = choice === selectedChoice;
+      const isCorrectChoice = viewModel.currentResult && choice === viewModel.currentResult.expectedAnswer;
+      const isWrongSelected =
+        viewModel.currentResult &&
+        !viewModel.currentResult.isCorrect &&
+        isSelected &&
+        choice !== viewModel.currentResult.expectedAnswer;
+
+      const classes = [
+        "answer-choice",
+        isSelected ? "is-selected" : "",
+        isCorrectChoice ? "is-correct" : "",
+        isWrongSelected ? "is-wrong" : ""
+      ]
+        .filter(Boolean)
+        .join(" ");
+
+      return `
+        <button
+          type="button"
+          class="${classes}"
+          data-answer-choice="${escapeAttribute(choice)}"
+        >
+          ${escapeHtml(choice)}
+        </button>
+      `;
+    })
+    .join("");
+}
+
 function setAuthMode(mode) {
   uiState.authMode = mode === "sign-up" ? "sign-up" : "sign-in";
   dom.authForm.dataset.mode = uiState.authMode;
@@ -456,6 +506,7 @@ function render(viewModel) {
     dom.questionText.textContent =
       "Connectez-vous ou creez un compte pour conserver votre progression et participer au classement global.";
     dom.answerInput.value = "";
+    dom.answerForm.dataset.selectedChoice = "";
     dom.answerInput.disabled = true;
     dom.answerSubmitButton.disabled = true;
     dom.nextQuestionButton.disabled = true;
@@ -466,6 +517,7 @@ function render(viewModel) {
     dom.questionText.textContent =
       "Toutes les questions de cette difficulte ont deja ete repondues pour ce profil.";
     dom.answerInput.value = "";
+    dom.answerForm.dataset.selectedChoice = "";
     dom.answerInput.disabled = true;
     dom.answerSubmitButton.disabled = true;
     dom.nextQuestionButton.disabled = true;
@@ -474,14 +526,22 @@ function render(viewModel) {
     setFeedbackMessage("Changez de difficulte ou importez de nouvelles questions.");
   } else {
     dom.questionText.textContent = viewModel.currentQuestion.prompt;
-    dom.answerInput.disabled = false;
+    dom.answerInput.disabled = viewModel.answerMode === "mcq";
     dom.answerSubmitButton.disabled = false;
     dom.nextQuestionButton.disabled = false;
     fillEditForm(viewModel.currentQuestion);
 
+    if (viewModel.answerMode !== "mcq" && viewModel.currentResult === null) {
+      dom.answerForm.dataset.selectedChoice = "";
+    }
+
     if (!viewModel.currentResult) {
       setAnswerFieldState();
-      setFeedbackMessage("Pret. Tapez votre reponse puis validez.");
+      setFeedbackMessage(
+        viewModel.answerMode === "mcq"
+          ? "QCM active pour cette question. Choisissez une proposition puis validez."
+          : "Pret. Tapez votre reponse puis validez."
+      );
     } else if (viewModel.currentResult.isCorrect) {
       setAnswerFieldState("is-correct");
       setFeedbackMessage(
@@ -496,6 +556,8 @@ function render(viewModel) {
       );
     }
   }
+
+  renderAnswerChoices(viewModel);
 
   dom.editPanel.classList.toggle("is-hidden", !canEditQuestion || !uiState.editPanelOpen);
   syncContributionMode();
@@ -790,12 +852,31 @@ async function main() {
   dom.answerForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     try {
-      if (!dom.answerInput.disabled) {
-        render(await app.submitAnswer(dom.answerInput.value.trim()));
+      if (uiState.viewModel?.answerMode === "mcq" && !dom.answerForm.dataset.selectedChoice) {
+        setFeedbackMessage("Choisissez une proposition avant de valider.", "is-wrong");
+        return;
       }
+
+      const submittedAnswer =
+        uiState.viewModel?.answerMode === "mcq"
+          ? (dom.answerForm.dataset.selectedChoice ?? "").trim()
+          : dom.answerInput.value.trim();
+
+      render(await app.submitAnswer(submittedAnswer));
     } catch (error) {
       reportUiError(error);
     }
+  });
+
+  dom.answerChoiceGroup.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-answer-choice]");
+
+    if (!button || uiState.viewModel?.currentResult) {
+      return;
+    }
+
+    dom.answerForm.dataset.selectedChoice = button.dataset.answerChoice ?? "";
+    renderAnswerChoices(uiState.viewModel);
   });
 
   dom.contributionToggleButton.addEventListener("click", () => {
@@ -813,6 +894,7 @@ async function main() {
 
   dom.nextQuestionButton.addEventListener("click", () => {
     dom.answerInput.value = "";
+    dom.answerForm.dataset.selectedChoice = "";
     render(app.pickNextQuestion());
     if (!dom.answerInput.disabled) {
       dom.answerInput.focus();
