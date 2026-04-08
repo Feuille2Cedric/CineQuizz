@@ -191,12 +191,17 @@
 
               <form id="answer-form" class="answer-form">
                 <label for="answer-input">Votre reponse</label>
-                <textarea
+                <input
                   id="answer-input"
+                  class="answer-input"
                   name="answer"
-                  rows="3"
+                  type="text"
+                  autocomplete="off"
+                  autocapitalize="off"
+                  autocorrect="off"
+                  spellcheck="false"
                   placeholder="Tapez votre reponse ici"
-                ></textarea>
+                />
                 <div class="action-row">
                   <button type="submit" class="primary-button">Valider</button>
                   <button id="next-question-button" type="button" class="ghost-button">
