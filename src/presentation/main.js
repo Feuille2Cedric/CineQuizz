@@ -228,6 +228,14 @@ function setFeedbackMessage(message, variant = "") {
   }
 }
 
+function setAnswerFieldState(state = "") {
+  dom.answerInput.classList.remove("is-correct", "is-wrong");
+
+  if (state) {
+    dom.answerInput.classList.add(state);
+  }
+}
+
 function reportUiError(error) {
   console.error(error);
   dom.dataMessage.textContent = error.message;
@@ -252,14 +260,14 @@ function fillEditForm(question) {
   dom.editDifficulty.value = question.difficulty;
 }
 
-function fillContributionEditForm(question) {
+function fillContributionEditForm(question, canRevealAnswer = false) {
   if (!question) {
     return;
   }
 
   dom.feedbackPrompt.value = question.prompt;
-  dom.feedbackAnswer.value = question.answer;
-  dom.feedbackAliases.value = question.acceptedAnswers.slice(1).join(", ");
+  dom.feedbackAnswer.value = canRevealAnswer ? question.answer : "";
+  dom.feedbackAliases.value = canRevealAnswer ? question.acceptedAnswers.slice(1).join(", ") : "";
   dom.feedbackDifficulty.value = question.difficulty;
 }
 
@@ -288,7 +296,7 @@ function render(viewModel) {
     uiState.contributionQuestionId = activeQuestionId;
 
     if (viewModel.currentQuestion) {
-      fillContributionEditForm(viewModel.currentQuestion);
+      fillContributionEditForm(viewModel.currentQuestion, viewModel.canRevealCurrentAnswer);
     } else {
       dom.feedbackPrompt.value = "";
       dom.feedbackAnswer.value = "";
@@ -366,6 +374,7 @@ function render(viewModel) {
     dom.answerSubmitButton.disabled = true;
     dom.nextQuestionButton.disabled = true;
     dom.editPanel.classList.add("is-hidden");
+    setAnswerFieldState();
     setFeedbackMessage("Mode Supabase actif. Authentification requise.");
   } else if (!viewModel.currentQuestion) {
     dom.questionText.textContent =
@@ -375,6 +384,7 @@ function render(viewModel) {
     dom.answerSubmitButton.disabled = true;
     dom.nextQuestionButton.disabled = true;
     dom.editPanel.classList.add("is-hidden");
+    setAnswerFieldState();
     setFeedbackMessage("Changez de difficulte ou importez de nouvelles questions.");
   } else {
     dom.questionText.textContent = viewModel.currentQuestion.prompt;
@@ -384,13 +394,16 @@ function render(viewModel) {
     fillEditForm(viewModel.currentQuestion);
 
     if (!viewModel.currentResult) {
+      setAnswerFieldState();
       setFeedbackMessage("Pret. Tapez votre reponse puis validez.");
     } else if (viewModel.currentResult.isCorrect) {
+      setAnswerFieldState("is-correct");
       setFeedbackMessage(
         `Bonne reponse. La reponse attendue etait: ${viewModel.currentResult.expectedAnswer}`,
         "is-correct"
       );
     } else {
+      setAnswerFieldState("is-wrong");
       setFeedbackMessage(
         `Incorrect. Votre reponse: ${viewModel.currentResult.submittedAnswer || "(vide)"}\nBonne reponse: ${viewModel.currentResult.expectedAnswer}`,
         "is-wrong"
@@ -405,6 +418,9 @@ function render(viewModel) {
     dom.contributionStatus.textContent = isSupabase
       ? "Connectez-vous pour envoyer des signalements, proposer des modifications ou soumettre de nouvelles questions."
       : "Les contributions communautaires sont disponibles uniquement en mode Supabase.";
+  } else if (viewModel.currentQuestion && !viewModel.canRevealCurrentAnswer) {
+    dom.contributionStatus.textContent =
+      "Vous pouvez signaler la question tout de suite. La bonne reponse ne sera revelee dans ce formulaire qu'apres avoir repondu a la question.";
   } else {
     dom.contributionStatus.textContent =
       "Vos demandes arrivent dans la file de moderation. Un administrateur peut les valider ou les refuser.";
@@ -687,7 +703,10 @@ async function main() {
     syncContributionMode();
 
     if (dom.questionFeedbackType.value === "edit" && uiState.viewModel?.currentQuestion) {
-      fillContributionEditForm(uiState.viewModel.currentQuestion);
+      fillContributionEditForm(
+        uiState.viewModel.currentQuestion,
+        uiState.viewModel.canRevealCurrentAnswer
+      );
     }
   });
 

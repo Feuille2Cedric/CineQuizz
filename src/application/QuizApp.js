@@ -95,6 +95,7 @@ export class QuizApp {
       difficultyLabel: toDifficultyLabel(this.state.difficulty),
       currentQuestion: this.state.currentQuestion,
       currentResult: this.state.currentResult,
+      canRevealCurrentAnswer: Boolean(this.state.currentResult),
       leaderboard: this.state.leaderboard,
       moderationRequests: this.state.moderationRequests,
       canContribute: this.state.mode === "supabase" && this.state.auth.isAuthenticated,

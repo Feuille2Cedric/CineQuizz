@@ -293,6 +293,25 @@ button {
   color: var(--text);
 }
 
+.answer-form textarea {
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.answer-form textarea.is-correct {
+  border-color: rgba(24, 121, 78, 0.42);
+  background: rgba(24, 121, 78, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(24, 121, 78, 0.14);
+}
+
+.answer-form textarea.is-wrong {
+  border-color: rgba(148, 37, 37, 0.4);
+  background: rgba(148, 37, 37, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(148, 37, 37, 0.12);
+}
+
 .nickname-form input {
   min-width: 220px;
 }
