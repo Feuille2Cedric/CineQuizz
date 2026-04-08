@@ -490,10 +490,16 @@ export class SupabaseGameRepository {
   }
 
   async #createProfile(nickname) {
-    const { error } = await this.client.from("profiles").insert({
-      user_id: this.userId,
-      nickname
-    });
+    const { error } = await this.client.from("profiles").upsert(
+      {
+        user_id: this.userId,
+        nickname
+      },
+      {
+        onConflict: "user_id",
+        ignoreDuplicates: false
+      }
+    );
 
     if (error) {
       throw new Error(this.#formatProfileError(error, "Creation du profil impossible"));

@@ -83,6 +83,40 @@ begin
 end;
 $$;
 
+create or replace function public.handle_new_user_profile()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_base_nickname text;
+  v_nickname text;
+begin
+  v_base_nickname := coalesce(
+    nullif(trim(new.raw_user_meta_data ->> 'display_name'), ''),
+    nullif(split_part(new.email, '@', 1), ''),
+    'Spectateur'
+  );
+
+  v_nickname := v_base_nickname;
+
+  if exists (
+    select 1
+    from public.profiles
+    where lower(trim(nickname)) = lower(trim(v_nickname))
+  ) then
+    v_nickname := left(v_base_nickname, 18) || '-' || left(new.id::text, 5);
+  end if;
+
+  insert into public.profiles (user_id, nickname)
+  values (new.id, v_nickname)
+  on conflict (user_id) do nothing;
+
+  return new;
+end;
+$$;
+
 create or replace function public.is_admin()
 returns boolean
 language sql
@@ -163,11 +197,17 @@ grant execute on function public.is_nickname_available(text) to anon, authentica
 grant execute on function public.resolve_sign_in_email(text) to anon, authenticated;
 
 drop trigger if exists profiles_touch_updated_at on public.profiles;
+drop trigger if exists on_auth_user_created on auth.users;
 
 create trigger profiles_touch_updated_at
 before update on public.profiles
 for each row
 execute procedure public.touch_updated_at();
+
+create trigger on_auth_user_created
+after insert on auth.users
+for each row
+execute procedure public.handle_new_user_profile();
 
 alter table public.profiles enable row level security;
 alter table public.user_question_progress enable row level security;
