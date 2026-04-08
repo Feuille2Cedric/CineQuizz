@@ -1049,6 +1049,10 @@ async function main() {
     }
   });
 
+  dom.questionFeedbackReason.addEventListener("input", () => {
+    dom.questionFeedbackReason.setCustomValidity("");
+  });
+
   dom.newQuestionType.addEventListener("change", () => {
     syncNewQuestionMode();
   });
@@ -1063,11 +1067,20 @@ async function main() {
         throw new Error("Aucune question active a signaler.");
       }
 
+      const trimmedReason = dom.questionFeedbackReason.value.trim();
+
+      if (!trimmedReason) {
+        dom.questionFeedbackReason.setCustomValidity("Il faut remplir l'explication.");
+        dom.questionFeedbackReason.reportValidity();
+        dom.questionFeedbackReason.focus();
+        return;
+      }
+
       const requestType = dom.questionFeedbackType.value;
       const result = await app.submitQuestionFeedback({
         type: requestType,
         questionId: currentQuestionId,
-        reason: dom.questionFeedbackReason.value.trim(),
+        reason: trimmedReason,
         prompt: dom.feedbackPrompt.value,
         answer: dom.feedbackAnswer.value,
         aliases: dom.feedbackAliases.value
