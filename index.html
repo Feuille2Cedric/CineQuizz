@@ -11,88 +11,96 @@
   <body>
     <section id="auth-gate" class="auth-gate is-hidden">
       <div class="auth-gate-shell">
-        <section id="auth-panel" class="auth-panel">
-          <p class="eyebrow">Classement et progression synchronises</p>
-          <h2 class="auth-title">Connectez-vous pour ouvrir CineQuizz</h2>
-          <p class="auth-copy">
-            Votre compte permet de conserver vos questions traitees, votre score
-            et votre place dans le classement global.
-          </p>
-
-          <div class="auth-highlights" aria-hidden="true">
-            <p>Questions chargees depuis Supabase</p>
-            <p>Progression liee a votre compte</p>
-            <p>Classement partage en direct</p>
+        <section class="auth-landing">
+          <div class="auth-intro">
+            <p class="eyebrow">CineQuizz</p>
+            <h1 class="landing-title">Le quiz cinema, sans bruit autour.</h1>
+            <p class="landing-copy">
+              Connectez-vous pour retrouver vos questions, votre score et votre
+              classement. Une fois entre, vous arrivez directement sur le quiz.
+            </p>
           </div>
 
-          <form id="auth-form" class="auth-form">
-            <label for="auth-nickname-input">Pseudo</label>
-            <input
-              id="auth-nickname-input"
-              name="nickname"
-              type="text"
-              minlength="3"
-              maxlength="24"
-              placeholder="Votre pseudo public"
-              autocomplete="nickname"
-            />
+          <section id="auth-panel" class="auth-panel">
+            <p class="auth-kicker">Connexion</p>
+            <h2 class="auth-title">Ouvrir l’application</h2>
 
-            <label for="auth-email-input">E-mail</label>
-            <input
-              id="auth-email-input"
-              name="email"
-              type="email"
-              placeholder="vous@example.com"
-              autocomplete="email"
-            />
+            <form id="auth-form" class="auth-form">
+              <label for="auth-nickname-input">Pseudo</label>
+              <input
+                id="auth-nickname-input"
+                name="nickname"
+                type="text"
+                minlength="3"
+                maxlength="24"
+                placeholder="Votre pseudo public"
+                autocomplete="nickname"
+              />
 
-            <label for="auth-password-input">Mot de passe</label>
-            <input
-              id="auth-password-input"
-              name="password"
-              type="password"
-              placeholder="Au moins 6 caracteres"
-              autocomplete="current-password"
-            />
+              <label for="auth-email-input">E-mail</label>
+              <input
+                id="auth-email-input"
+                name="email"
+                type="email"
+                placeholder="vous@example.com"
+                autocomplete="email"
+              />
 
-            <div class="action-row">
-              <button type="submit" class="primary-button" data-auth-action="sign-in">
-                Se connecter
-              </button>
-              <button type="submit" class="ghost-button" data-auth-action="sign-up">
-                Creer un compte
+              <label for="auth-password-input">Mot de passe</label>
+              <input
+                id="auth-password-input"
+                name="password"
+                type="password"
+                placeholder="Au moins 6 caracteres"
+                autocomplete="current-password"
+              />
+
+              <div class="action-row auth-actions">
+                <button type="submit" class="primary-button" data-auth-action="sign-in">
+                  Se connecter
+                </button>
+                <button type="submit" class="ghost-button" data-auth-action="sign-up">
+                  Creer un compte
+                </button>
+              </div>
+            </form>
+
+            <div id="auth-ready" class="auth-ready is-hidden">
+              <p class="auth-ready-copy">
+                Session active pour <strong id="auth-ready-email"></strong>
+              </p>
+              <button id="auth-continue-button" type="button" class="primary-button">
+                Entrer dans le quiz
               </button>
             </div>
-          </form>
 
-          <p id="auth-status" class="auth-status" aria-live="polite"></p>
+            <p id="auth-status" class="auth-status" aria-live="polite"></p>
+          </section>
         </section>
       </div>
     </section>
 
     <div id="page-shell" class="page-shell">
-      <header class="hero">
-        <div>
-          <p class="eyebrow">Quiz cinema deployable sur GitHub Pages</p>
-          <h1>CineQuizz</h1>
-          <p class="hero-copy">
-            Reponse libre, difficulte selectable, suivi des bonnes reponses,
-            corrections locales et classement Supabase.
-          </p>
+      <header class="app-header">
+        <div class="app-brand">
+          <p class="eyebrow">CineQuizz</p>
+          <h1 class="app-title">Quiz</h1>
         </div>
-        <div class="hero-panel">
-          <p id="storage-mode" class="mode-pill">Mode local</p>
-          <p id="sync-status" class="sync-status">
-            Configurez Supabase dans <code>config.js</code> pour activer le
-            classement global.
-          </p>
 
+        <nav class="tabs" aria-label="Navigation principale">
+          <button class="tab is-active" data-tab-target="quiz-tab">Quiz</button>
+          <button class="tab" data-tab-target="leaderboard-tab">Classement</button>
+          <button class="tab" data-tab-target="data-tab">Donnees</button>
+        </nav>
+
+        <div class="app-meta">
+          <p id="storage-mode" class="mode-pill">Mode local</p>
           <div id="auth-session" class="auth-session is-hidden">
             <p class="auth-identity">
-              Connecte avec <strong id="auth-email-value"></strong>
+              <strong id="auth-email-value"></strong>
             </p>
             <button id="auth-signout-button" type="button" class="ghost-button">
-              Se deconnecter
+              Quitter
             </button>
           </div>
         </div>
@@ -100,12 +108,6 @@
 
       <main class="layout">
         <section class="main-column">
-          <nav class="tabs" aria-label="Navigation principale">
-            <button class="tab is-active" data-tab-target="quiz-tab">Quiz</button>
-            <button class="tab" data-tab-target="leaderboard-tab">Classement</button>
-            <button class="tab" data-tab-target="data-tab">Donnees</button>
-          </nav>
-
           <section id="quiz-tab" class="tab-panel is-active">
             <div class="toolbar">
               <div class="difficulty-switch" role="group" aria-label="Difficulte">
@@ -242,10 +244,17 @@
             <div class="section-heading">
               <h2>Donnees</h2>
               <p>
-                Le catalogue principal est genere a partir de JSON locaux. Vous
-                pouvez aussi importer un pack temporaire dans ce navigateur.
+                Parametres, imports et informations techniques de l’application.
               </p>
             </div>
+
+            <article class="data-card data-card-wide">
+              <h3>Etat de synchronisation</h3>
+              <p id="sync-status" class="sync-status">
+                Configurez Supabase dans <code>config.js</code> pour activer le
+                classement global.
+              </p>
+            </article>
 
             <div class="insight-grid">
               <section class="stats-card compact-card">

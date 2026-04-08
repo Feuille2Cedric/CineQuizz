@@ -16,6 +16,9 @@ const dom = {
   syncStatus: document.getElementById("sync-status"),
   authPanel: document.getElementById("auth-panel"),
   authForm: document.getElementById("auth-form"),
+  authReady: document.getElementById("auth-ready"),
+  authReadyEmail: document.getElementById("auth-ready-email"),
+  authContinueButton: document.getElementById("auth-continue-button"),
   authNicknameInput: document.getElementById("auth-nickname-input"),
   authEmailInput: document.getElementById("auth-email-input"),
   authPasswordInput: document.getElementById("auth-password-input"),
@@ -62,7 +65,9 @@ const dom = {
 
 const uiState = {
   editPanelOpen: false,
-  editQuestionId: null
+  editQuestionId: null,
+  entryDismissed: false,
+  viewModel: null
 };
 
 function escapeHtml(value) {
@@ -142,8 +147,11 @@ function fillEditForm(question) {
 }
 
 function render(viewModel) {
+  uiState.viewModel = viewModel;
+
   const isSupabase = viewModel.mode === "supabase";
   const requiresAuth = isSupabase && !viewModel.auth.isAuthenticated;
+  const shouldShowEntry = isSupabase && (!uiState.entryDismissed || requiresAuth);
   const activeQuestionId = viewModel.currentQuestion?.id ?? null;
   const canEditQuestion = Boolean(activeQuestionId) && !requiresAuth;
 
@@ -159,9 +167,11 @@ function render(viewModel) {
       : "Questions, progression et classement charges depuis Supabase."
     : "Progression stockee dans ce navigateur. Configurez config.js pour activer Supabase.";
 
-  dom.pageShell.classList.toggle("app-locked", requiresAuth);
-  dom.authGate.classList.toggle("is-hidden", !requiresAuth);
+  dom.pageShell.classList.toggle("is-hidden", shouldShowEntry);
+  dom.authGate.classList.toggle("is-hidden", !shouldShowEntry);
   dom.authForm.classList.toggle("is-hidden", !requiresAuth);
+  dom.authReady.classList.toggle("is-hidden", !shouldShowEntry || requiresAuth || !viewModel.auth.isAuthenticated);
+  dom.authReadyEmail.textContent = viewModel.auth.email ?? "";
   dom.authSession.classList.toggle("is-hidden", !isSupabase || !viewModel.auth.isAuthenticated);
   dom.authEmailValue.textContent = viewModel.auth.email ?? "";
 
@@ -367,6 +377,7 @@ async function main() {
           ? await app.signUp({ email, password, preferredNickname })
           : await app.signIn({ email, password, preferredNickname });
 
+      uiState.entryDismissed = result.viewModel.auth.isAuthenticated;
       render(result.viewModel);
       dom.authPasswordInput.value = "";
       dom.nicknameInput.value = result.viewModel.profile.nickname ?? "";
@@ -383,6 +394,7 @@ async function main() {
 
   dom.authSignoutButton.addEventListener("click", async () => {
     try {
+      uiState.entryDismissed = false;
       render(await app.signOut());
       dom.authPasswordInput.value = "";
       dom.authNicknameInput.value = dom.nicknameInput.value.trim();
@@ -391,6 +403,15 @@ async function main() {
       dom.authEmailInput.focus();
     } catch (error) {
       reportAuthError(error);
+    }
+  });
+
+  dom.authContinueButton.addEventListener("click", () => {
+    uiState.entryDismissed = true;
+    render(uiState.viewModel);
+
+    if (!dom.answerInput.disabled) {
+      dom.answerInput.focus();
     }
   });
 
