@@ -154,11 +154,11 @@ begin
   on conflict (user_id, question_id) do nothing;
 
   if found then
-    update public.profiles
+    update public.profiles as p
     set
-      total_answered = total_answered + 1,
-      total_correct = total_correct + case when p_is_correct then 1 else 0 end
-    where user_id = v_user_id;
+      total_answered = p.total_answered + 1,
+      total_correct = p.total_correct + case when p_is_correct then 1 else 0 end
+    where p.user_id = v_user_id;
 
     return query
       select true, profiles.total_answered, profiles.total_correct
@@ -217,11 +217,11 @@ begin
   where user_id = v_user_id
     and question_id = p_question_id;
 
-  update public.profiles
+  update public.profiles as p
   set
-    total_answered = greatest(total_answered - 1, 0),
-    total_correct = greatest(total_correct - case when v_existing.is_correct then 1 else 0 end, 0)
-  where user_id = v_user_id;
+    total_answered = greatest(p.total_answered - 1, 0),
+    total_correct = greatest(p.total_correct - case when v_existing.is_correct then 1 else 0 end, 0)
+  where p.user_id = v_user_id;
 
   return query
     select true, profiles.total_answered, profiles.total_correct

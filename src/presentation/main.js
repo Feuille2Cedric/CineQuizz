@@ -13,9 +13,11 @@ const dom = {
   pageShell: document.getElementById("page-shell"),
   authGate: document.getElementById("auth-gate"),
   storageMode: document.getElementById("storage-mode"),
+  modeSwitchButton: document.getElementById("mode-switch-button"),
   syncStatus: document.getElementById("sync-status"),
   authPanel: document.getElementById("auth-panel"),
   authForm: document.getElementById("auth-form"),
+  authLocalButton: document.getElementById("auth-local-button"),
   authReady: document.getElementById("auth-ready"),
   authReadyEmail: document.getElementById("auth-ready-email"),
   authContinueButton: document.getElementById("auth-continue-button"),
@@ -67,8 +69,12 @@ const uiState = {
   editPanelOpen: false,
   editQuestionId: null,
   entryDismissed: false,
-  viewModel: null
+  viewModel: null,
+  runtimePreference: null,
+  supabaseAvailable: false
 };
+
+const RUNTIME_PREFERENCE_KEY = "cinequizz:runtime-preference";
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -165,7 +171,11 @@ function render(viewModel) {
     ? requiresAuth
       ? "Supabase est configure. Connectez-vous pour charger votre progression et le classement."
       : "Questions, progression et classement charges depuis Supabase."
-    : "Progression stockee dans ce navigateur. Configurez config.js pour activer Supabase.";
+    : uiState.supabaseAvailable
+      ? "Mode local actif. Votre progression reste sur cet appareil. Vous pouvez repasser a Supabase a tout moment."
+      : "Progression stockee dans ce navigateur. Configurez config.js pour activer Supabase.";
+  dom.modeSwitchButton.classList.toggle("is-hidden", !uiState.supabaseAvailable || isSupabase);
+  dom.authLocalButton.classList.toggle("is-hidden", !uiState.supabaseAvailable);
 
   dom.pageShell.classList.toggle("is-hidden", shouldShowEntry);
   dom.authGate.classList.toggle("is-hidden", !shouldShowEntry);
@@ -276,9 +286,11 @@ function downloadJson(filename, contents) {
 
 function buildRuntimeServices() {
   const runtimeConfig = window.CINEQUIZZ_CONFIG ?? {};
+  const runtimePreference = window.localStorage.getItem(RUNTIME_PREFERENCE_KEY) ?? "auto";
 
-  if (!hasSupabaseRuntime(runtimeConfig)) {
+  if (runtimePreference === "local" || !hasSupabaseRuntime(runtimeConfig)) {
     return {
+      supabaseAvailable: hasSupabaseRuntime(runtimeConfig),
       catalogRepository: new QuestionCatalogRepository(),
       gameRepository: new BrowserGameRepository()
     };
@@ -287,6 +299,7 @@ function buildRuntimeServices() {
   const client = createSupabaseClient(runtimeConfig);
 
   return {
+    supabaseAvailable: true,
     catalogRepository: new SupabaseQuestionCatalogRepository(client),
     gameRepository: new SupabaseGameRepository(client)
   };
@@ -294,33 +307,46 @@ function buildRuntimeServices() {
 
 async function main() {
   const patchRepository = new LocalQuestionPatchRepository();
-  let { catalogRepository, gameRepository } = buildRuntimeServices();
+  let app;
 
-  let app = new QuizApp({
-    catalogRepository,
-    patchRepository,
-    gameRepository
-  });
+  async function bootApplication() {
+    let { catalogRepository, gameRepository, supabaseAvailable } = buildRuntimeServices();
+    uiState.supabaseAvailable = supabaseAvailable;
+    uiState.runtimePreference = window.localStorage.getItem(RUNTIME_PREFERENCE_KEY) ?? "auto";
 
-  let viewModel;
-  let startupMessage = "";
+    app = new QuizApp({
+      catalogRepository,
+      patchRepository,
+      gameRepository
+    });
 
-  try {
-    viewModel = await app.initialize(window.localStorage.getItem("cinequizz:last-nickname") ?? "");
-  } catch (error) {
-    console.error(error);
-    catalogRepository = new QuestionCatalogRepository();
-    gameRepository = new BrowserGameRepository();
-    app = new QuizApp({ catalogRepository, patchRepository, gameRepository });
-    viewModel = await app.initialize(window.localStorage.getItem("cinequizz:last-nickname") ?? "");
-    startupMessage = `Supabase indisponible, retour au mode local: ${error.message}`;
+    let viewModel;
+    let startupMessage = "";
+
+    try {
+      viewModel = await app.initialize(window.localStorage.getItem("cinequizz:last-nickname") ?? "");
+    } catch (error) {
+      console.error(error);
+      window.localStorage.setItem(RUNTIME_PREFERENCE_KEY, "local");
+      uiState.runtimePreference = "local";
+      uiState.supabaseAvailable = supabaseAvailable;
+      app = new QuizApp({
+        catalogRepository: new QuestionCatalogRepository(),
+        patchRepository,
+        gameRepository: new BrowserGameRepository()
+      });
+      viewModel = await app.initialize(window.localStorage.getItem("cinequizz:last-nickname") ?? "");
+      startupMessage = `Supabase indisponible, retour au mode local: ${error.message}`;
+    }
+
+    render(viewModel);
+
+    if (startupMessage) {
+      dom.syncStatus.textContent = startupMessage;
+    }
   }
 
-  render(viewModel);
-
-  if (startupMessage) {
-    dom.syncStatus.textContent = startupMessage;
-  }
+  await bootApplication();
 
   dom.tabs.forEach((tabButton) => {
     tabButton.addEventListener("click", () => activateTab(tabButton.dataset.tabTarget));
@@ -413,6 +439,23 @@ async function main() {
     if (!dom.answerInput.disabled) {
       dom.answerInput.focus();
     }
+  });
+
+  dom.authLocalButton.addEventListener("click", async () => {
+    window.localStorage.setItem(RUNTIME_PREFERENCE_KEY, "local");
+    uiState.entryDismissed = true;
+    await bootApplication();
+
+    if (!dom.answerInput.disabled) {
+      dom.answerInput.focus();
+    }
+  });
+
+  dom.modeSwitchButton.addEventListener("click", async () => {
+    window.localStorage.setItem(RUNTIME_PREFERENCE_KEY, "supabase");
+    uiState.entryDismissed = false;
+    await bootApplication();
+    dom.authEmailInput.focus();
   });
 
   dom.answerForm.addEventListener("submit", async (event) => {

@@ -6,17 +6,34 @@ export class SupabaseQuestionCatalogRepository {
   }
 
   async loadQuestions() {
-    const { data, error } = await this.client
-      .from("questions")
-      .select("id,difficulty,prompt,answer,accepted_answers,metadata")
-      .eq("is_active", true)
-      .order("id");
+    const pageSize = 1000;
+    const questions = [];
+    let from = 0;
 
-    if (error) {
-      throw new Error(`Impossible de charger les questions Supabase: ${error.message}`);
+    while (true) {
+      const to = from + pageSize - 1;
+      const { data, error } = await this.client
+        .from("questions")
+        .select("id,difficulty,prompt,answer,accepted_answers,metadata")
+        .eq("is_active", true)
+        .order("id")
+        .range(from, to);
+
+      if (error) {
+        throw new Error(`Impossible de charger les questions Supabase: ${error.message}`);
+      }
+
+      const batch = data ?? [];
+      questions.push(...batch);
+
+      if (batch.length < pageSize) {
+        break;
+      }
+
+      from += pageSize;
     }
 
-    return (data ?? []).map((rawQuestion) =>
+    return questions.map((rawQuestion) =>
       Question.fromPlain({
         id: rawQuestion.id,
         difficulty: rawQuestion.difficulty,

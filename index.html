@@ -65,6 +65,16 @@
               </div>
             </form>
 
+            <div class="auth-divider" aria-hidden="true">
+              <span></span>
+              <p>ou</p>
+              <span></span>
+            </div>
+
+            <button id="auth-local-button" type="button" class="ghost-button auth-local-button">
+              Continuer en local
+            </button>
+
             <div id="auth-ready" class="auth-ready is-hidden">
               <p class="auth-ready-copy">
                 Session active pour <strong id="auth-ready-email"></strong>
@@ -95,6 +105,9 @@
 
         <div class="app-meta">
           <p id="storage-mode" class="mode-pill">Mode local</p>
+          <button id="mode-switch-button" type="button" class="ghost-button is-hidden">
+            Passer a Supabase
+          </button>
           <div id="auth-session" class="auth-session is-hidden">
             <p class="auth-identity">
               <strong id="auth-email-value"></strong>
