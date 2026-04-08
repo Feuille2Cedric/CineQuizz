@@ -297,10 +297,16 @@ button {
   display: block;
   min-height: 84px;
   padding: 14px 16px;
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  font-weight: 500;
   line-height: 1.45;
   color: var(--text);
+  -webkit-text-fill-color: var(--text);
   caret-color: var(--text);
   color-scheme: light;
+  background-clip: padding-box;
+  text-shadow: none;
   resize: vertical;
   vertical-align: top;
   overflow-y: auto;
@@ -319,10 +325,16 @@ button {
     inset 0 0 0 1px rgba(191, 75, 40, 0.12);
 }
 
+.answer-form textarea::placeholder {
+  color: rgba(109, 88, 72, 0.75);
+  -webkit-text-fill-color: rgba(109, 88, 72, 0.75);
+}
+
 .answer-form textarea.is-correct {
   border-color: rgba(24, 121, 78, 0.42);
   background: rgba(24, 121, 78, 0.1);
   color: var(--text);
+  -webkit-text-fill-color: var(--text);
   caret-color: var(--text);
   box-shadow: inset 0 0 0 1px rgba(24, 121, 78, 0.14);
 }
@@ -331,6 +343,7 @@ button {
   border-color: rgba(148, 37, 37, 0.4);
   background: rgba(148, 37, 37, 0.08);
   color: var(--text);
+  -webkit-text-fill-color: var(--text);
   caret-color: var(--text);
   box-shadow: inset 0 0 0 1px rgba(148, 37, 37, 0.12);
 }
