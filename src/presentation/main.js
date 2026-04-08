@@ -442,38 +442,46 @@ function questionUsesMultipleChoice(question) {
 
   const manualChoices = question.metadata?.mcqChoices ?? question.metadata?.mcq_choices;
   const manualDistractors = question.metadata?.distractors;
+  const answerLength = String(question.answer ?? "").trim().length;
+  const answerWordCount = String(question.answer ?? "").trim().split(/\s+/).filter(Boolean).length;
+
   return (
-    question.metadata?.answerMode === "mcq" ||
-    (Array.isArray(manualChoices) && manualChoices.length >= 2) ||
-    (Array.isArray(manualDistractors) && manualDistractors.length >= 1)
+    question.metadata?.answerMode !== "text" &&
+    (
+      question.metadata?.answerMode === "mcq" ||
+      (Array.isArray(manualChoices) && manualChoices.length >= 2) ||
+      (Array.isArray(manualDistractors) && manualDistractors.length >= 1) ||
+      answerLength >= 90 ||
+      answerWordCount >= 14
+    )
   );
+}
+
+function setContributionFieldVisibility(element, shouldShow, displayValue = "grid") {
+  element.classList.toggle("is-hidden", !shouldShow);
+  element.hidden = !shouldShow;
+  element.style.display = shouldShow ? displayValue : "none";
 }
 
 function syncContributionMode() {
   const wantsEdit = dom.questionFeedbackType.value === "edit";
-  dom.feedbackEditFields.classList.toggle("is-hidden", !wantsEdit);
-
   const isMcq = questionUsesMultipleChoice(uiState.viewModel?.currentQuestion);
-  dom.feedbackAliasesFields.classList.toggle("is-hidden", !wantsEdit || isMcq);
-  dom.feedbackAliasesFields.hidden = !wantsEdit || isMcq;
-  dom.feedbackAliasesFields.style.display = !wantsEdit || isMcq ? "none" : "";
-  dom.feedbackAliases.disabled = !wantsEdit || isMcq;
 
-  dom.feedbackMcqFields.classList.toggle("is-hidden", !wantsEdit || !isMcq);
-  dom.feedbackMcqFields.hidden = !wantsEdit || !isMcq;
-  dom.feedbackMcqFields.style.display = !wantsEdit || !isMcq ? "none" : "";
+  setContributionFieldVisibility(dom.feedbackEditFields, wantsEdit);
+  setContributionFieldVisibility(dom.feedbackAliasesFields, wantsEdit && !isMcq);
+  setContributionFieldVisibility(dom.feedbackMcqFields, wantsEdit && isMcq);
+
+  dom.feedbackAliases.disabled = !wantsEdit || isMcq;
   dom.feedbackDistractors.disabled = !wantsEdit || !isMcq;
 }
 
 function syncNewQuestionMode() {
   const isMcq = dom.newQuestionType.value === "mcq";
-  dom.newQuestionAliasesFields.classList.toggle("is-hidden", isMcq);
-  dom.newQuestionAliasesFields.hidden = isMcq;
-  dom.newQuestionAliasesFields.style.display = isMcq ? "none" : "";
+  dom.newQuestionForm.dataset.questionType = isMcq ? "mcq" : "text";
+  setContributionFieldVisibility(dom.newQuestionAliasesFields, !isMcq);
+  setContributionFieldVisibility(dom.newQuestionMcqFields, isMcq);
+
   dom.newQuestionAliases.disabled = dom.newQuestionType.disabled || isMcq;
-  dom.newQuestionMcqFields.classList.toggle("is-hidden", !isMcq);
-  dom.newQuestionMcqFields.hidden = !isMcq;
-  dom.newQuestionMcqFields.style.display = isMcq ? "" : "none";
   dom.newQuestionDistractors.disabled = dom.newQuestionType.disabled || !isMcq;
 }
 

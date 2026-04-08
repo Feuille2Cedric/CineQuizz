@@ -718,7 +718,13 @@ button {
 #new-question-aliases-fields.is-hidden,
 #new-question-aliases-fields[hidden],
 #new-question-mcq-fields.is-hidden,
-#new-question-mcq-fields[hidden] {
+#new-question-mcq-fields[hidden],
+#feedback-edit-fields.is-hidden,
+#feedback-edit-fields[hidden],
+#feedback-aliases-fields.is-hidden,
+#feedback-aliases-fields[hidden],
+#feedback-mcq-fields.is-hidden,
+#feedback-mcq-fields[hidden] {
   display: none !important;
 }
 
