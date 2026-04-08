@@ -14,8 +14,17 @@ set search_path = public
 as $$
   select not exists (
     select 1
-    from public.profiles
-    where lower(trim(nickname)) = lower(trim(p_nickname))
+    from (
+      select lower(trim(profiles.nickname)) as normalized_nickname
+      from public.profiles as profiles
+
+      union
+
+      select lower(trim(users.raw_user_meta_data ->> 'display_name')) as normalized_nickname
+      from auth.users as users
+      where nullif(trim(users.raw_user_meta_data ->> 'display_name'), '') is not null
+    ) as nicknames
+    where nicknames.normalized_nickname = lower(trim(p_nickname))
   );
 $$;
 
@@ -41,10 +50,17 @@ as $$
       on users.id = profiles.user_id
     where lower(trim(profiles.nickname)) = lower(trim(p_identifier))
     limit 1
+  ),
+  metadata_email as (
+    select users.email
+    from auth.users as users
+    where lower(trim(users.raw_user_meta_data ->> 'display_name')) = lower(trim(p_identifier))
+    limit 1
   )
   select coalesce(
     (select email from direct_email),
-    (select email from profile_email)
+    (select email from profile_email),
+    (select email from metadata_email)
   );
 $$;
 

@@ -16,6 +16,9 @@ const dom = {
   modeSwitchButton: document.getElementById("mode-switch-button"),
   syncStatus: document.getElementById("sync-status"),
   authPanel: document.getElementById("auth-panel"),
+  authKicker: document.getElementById("auth-kicker"),
+  authTitle: document.getElementById("auth-title"),
+  authModeCopy: document.getElementById("auth-mode-copy"),
   authForm: document.getElementById("auth-form"),
   authModeSignin: document.getElementById("auth-mode-signin"),
   authModeSignup: document.getElementById("auth-mode-signup"),
@@ -105,6 +108,7 @@ const uiState = {
   entryDismissed: false,
   viewModel: null,
   authMode: "sign-in",
+  authBusy: false,
   runtimePreference: null,
   supabaseAvailable: false
 };
@@ -247,19 +251,51 @@ function setAnswerFieldState(state = "") {
 
 function renderAuthMode() {
   const isSignUp = uiState.authMode === "sign-up";
+  const buttonLabel = uiState.authBusy
+    ? isSignUp
+      ? "Creation..."
+      : "Connexion..."
+    : isSignUp
+      ? "Creer un compte"
+      : "Se connecter";
 
   dom.authModeSignin.classList.toggle("is-active", !isSignUp);
   dom.authModeSignup.classList.toggle("is-active", isSignUp);
+  dom.authModeSignin.disabled = uiState.authBusy;
+  dom.authModeSignup.disabled = uiState.authBusy;
   dom.authNicknameField.classList.toggle("is-hidden", !isSignUp);
-  dom.authNicknameInput.disabled = !isSignUp;
+  dom.authNicknameInput.disabled = uiState.authBusy || !isSignUp;
   dom.authNicknameInput.required = isSignUp;
+  dom.authEmailInput.disabled = uiState.authBusy;
+  dom.authPasswordInput.disabled = uiState.authBusy;
+  dom.authLocalButton.disabled = uiState.authBusy;
+  dom.authKicker.textContent = isSignUp ? "Inscription" : "Connexion";
+  dom.authTitle.textContent = isSignUp ? "Creer un compte" : "Entrer dans CineQuizz";
+  dom.authModeCopy.textContent = isSignUp
+    ? "Choisissez un pseudo unique, ajoutez votre e-mail, puis creez votre compte."
+    : "Connectez-vous avec votre e-mail ou votre pseudo pour reprendre votre progression.";
   dom.authIdentifierLabel.textContent = isSignUp ? "E-mail" : "E-mail ou pseudo";
   dom.authEmailInput.placeholder = isSignUp
     ? "vous@example.com"
     : "vous@example.com ou votre pseudo";
   dom.authEmailInput.autocomplete = isSignUp ? "email" : "username";
   dom.authPasswordInput.autocomplete = isSignUp ? "new-password" : "current-password";
-  dom.authSubmitButton.textContent = isSignUp ? "Creer un compte" : "Se connecter";
+  dom.authSubmitButton.disabled = uiState.authBusy;
+  dom.authSubmitButton.textContent = buttonLabel;
+}
+
+function setAuthStatus(message = "", variant = "") {
+  dom.authStatus.textContent = message;
+  dom.authStatus.className = "auth-status";
+
+  if (variant) {
+    dom.authStatus.classList.add(variant);
+  }
+}
+
+function setAuthBusy(isBusy) {
+  uiState.authBusy = isBusy;
+  renderAuthMode();
 }
 
 function reportUiError(error) {
@@ -270,7 +306,7 @@ function reportUiError(error) {
 
 function reportAuthError(error) {
   console.error(error);
-  dom.authStatus.textContent = error.message;
+  setAuthStatus(error.message, "is-error");
   dom.dataMessage.textContent = error.message;
 }
 
@@ -576,7 +612,8 @@ async function main() {
   [dom.authModeSignin, dom.authModeSignup].forEach((button) => {
     button.addEventListener("click", () => {
       uiState.authMode = button.dataset.authMode;
-      dom.authStatus.textContent = "";
+      setAuthStatus("");
+      dom.authPasswordInput.value = "";
       renderAuthMode();
 
       if (uiState.authMode === "sign-up") {
@@ -618,35 +655,38 @@ async function main() {
     event.preventDefault();
 
     try {
+      setAuthStatus("");
       const action = uiState.authMode;
       const identifier = dom.authEmailInput.value.trim();
       const password = dom.authPasswordInput.value;
       const preferredNickname = dom.authNicknameInput.value.trim();
 
       if (!identifier) {
-        dom.authStatus.textContent = "L'e-mail ou le pseudo est requis.";
+        setAuthStatus("L'e-mail ou le pseudo est requis.", "is-error");
         return;
       }
 
       if (!password || password.length < 6) {
-        dom.authStatus.textContent = "Le mot de passe doit faire au moins 6 caracteres.";
+        setAuthStatus("Le mot de passe doit faire au moins 6 caracteres.", "is-error");
         return;
       }
 
       if (action === "sign-up" && !preferredNickname) {
-        dom.authStatus.textContent = "Le pseudo est requis pour creer un compte.";
+        setAuthStatus("Le pseudo est requis pour creer un compte.", "is-error");
         return;
       }
 
       if (action === "sign-up" && preferredNickname.length < 3) {
-        dom.authStatus.textContent = "Le pseudo doit faire au moins 3 caracteres.";
+        setAuthStatus("Le pseudo doit faire au moins 3 caracteres.", "is-error");
         return;
       }
 
       if (action === "sign-up" && !looksLikeEmail(identifier)) {
-        dom.authStatus.textContent = "Un e-mail valide est requis pour creer un compte.";
+        setAuthStatus("Un e-mail valide est requis pour creer un compte.", "is-error");
         return;
       }
+
+      setAuthBusy(true);
 
       const result =
         action === "sign-up"
@@ -654,27 +694,40 @@ async function main() {
           : await app.signIn({ identifier, password });
 
       uiState.entryDismissed = result.viewModel.auth.isAuthenticated;
+      if (action === "sign-up" && !result.viewModel.auth.isAuthenticated) {
+        uiState.authMode = "sign-in";
+      }
       render(result.viewModel);
+      renderAuthMode();
       dom.authPasswordInput.value = "";
+      dom.authNicknameInput.value = result.viewModel.auth.isAuthenticated
+        ? result.viewModel.profile.nickname ?? ""
+        : "";
       dom.nicknameInput.value = result.viewModel.profile.nickname ?? "";
-      dom.authStatus.textContent = result.message;
+      setAuthStatus(result.message, "is-success");
       dom.dataMessage.textContent = result.message;
 
       if (!dom.answerInput.disabled) {
         dom.answerInput.focus();
+      } else {
+        dom.authEmailInput.focus();
       }
     } catch (error) {
       reportAuthError(error);
+    } finally {
+      setAuthBusy(false);
     }
   });
 
   dom.authSignoutButton.addEventListener("click", async () => {
     try {
       uiState.entryDismissed = false;
+      uiState.authMode = "sign-in";
       render(await app.signOut());
+      renderAuthMode();
       dom.authPasswordInput.value = "";
+      setAuthStatus("Session fermee.", "is-success");
       dom.authNicknameInput.value = dom.nicknameInput.value.trim();
-      dom.authStatus.textContent = "Session fermee.";
       dom.dataMessage.textContent = "Deconnexion effectuee.";
       dom.authEmailInput.focus();
     } catch (error) {

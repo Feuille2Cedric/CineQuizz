@@ -24,6 +24,10 @@ function slugify(value) {
     .slice(0, 48);
 }
 
+function looksLikeEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value ?? "").trim());
+}
+
 export class SupabaseGameRepository {
   constructor(client) {
     this.client = client;
@@ -328,7 +332,7 @@ export class SupabaseGameRepository {
     });
 
     if (error) {
-      throw new Error(`Connexion impossible: ${error.message}`);
+      throw new Error(this.#formatAuthError(error, "Connexion impossible"));
     }
 
     try {
@@ -355,7 +359,7 @@ export class SupabaseGameRepository {
     });
 
     if (error) {
-      throw new Error(`Inscription impossible: ${error.message}`);
+      throw new Error(this.#formatAuthError(error, "Inscription impossible"));
     }
 
     if (data.session?.user) {
@@ -384,7 +388,7 @@ export class SupabaseGameRepository {
     const { error } = await this.client.auth.signOut();
 
     if (error) {
-      throw new Error(`Deconnexion impossible: ${error.message}`);
+      throw new Error(this.#formatAuthError(error, "Deconnexion impossible"));
     }
 
     this.userId = null;
@@ -595,6 +599,12 @@ export class SupabaseGameRepository {
     });
 
     if (error) {
+      if (error.code === "42883") {
+        throw new Error(
+          "Le controle des pseudos n'est pas configure sur Supabase. Appliquez auth_nickname_uniqueness.sql."
+        );
+      }
+
       throw new Error(`Verification du pseudo impossible: ${error.message}`);
     }
 
@@ -610,11 +620,21 @@ export class SupabaseGameRepository {
       throw new Error("L'e-mail ou le pseudo est requis.");
     }
 
+    if (looksLikeEmail(candidate)) {
+      return candidate.toLowerCase();
+    }
+
     const { data, error } = await this.client.rpc("resolve_sign_in_email", {
       p_identifier: candidate
     });
 
     if (error) {
+      if (error.code === "42883") {
+        throw new Error(
+          "La connexion par pseudo n'est pas configuree sur Supabase. Appliquez auth_nickname_uniqueness.sql ou connectez-vous avec votre e-mail."
+        );
+      }
+
       throw new Error(`Resolution de l'identifiant impossible: ${error.message}`);
     }
 
@@ -631,6 +651,28 @@ export class SupabaseGameRepository {
     }
 
     return `${fallbackMessage}: ${error.message}`;
+  }
+
+  #formatAuthError(error, fallbackMessage) {
+    const message = String(error?.message ?? "");
+
+    if (/user already registered/i.test(message)) {
+      return "Cet e-mail est deja utilise.";
+    }
+
+    if (/invalid login credentials/i.test(message)) {
+      return "Identifiants invalides.";
+    }
+
+    if (/email not confirmed/i.test(message)) {
+      return "Votre e-mail n'est pas encore confirme.";
+    }
+
+    if (/password/i.test(message) && /weak|short|least/i.test(message)) {
+      return "Le mot de passe est trop faible.";
+    }
+
+    return `${fallbackMessage}: ${message}`;
   }
 
   #buildCommunityQuestionId(prompt) {

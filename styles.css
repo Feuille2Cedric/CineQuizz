@@ -367,10 +367,16 @@ button {
 }
 
 .auth-title {
-  margin: 6px 0 18px;
+  margin: 6px 0 10px;
   font-family: var(--font-display);
   font-size: clamp(1.8rem, 4vw, 2.6rem);
   line-height: 0.96;
+}
+
+.auth-copy {
+  margin: 0 0 18px;
+  color: var(--muted);
+  line-height: 1.65;
 }
 
 .auth-session {
@@ -394,7 +400,26 @@ button {
 .auth-status {
   min-height: 24px;
   margin: 14px 0 0;
-  padding-left: 2px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(35, 22, 13, 0.05);
+  border: 1px solid transparent;
+}
+
+.auth-status:empty {
+  display: none;
+}
+
+.auth-status.is-success {
+  color: var(--success);
+  background: rgba(24, 121, 78, 0.08);
+  border-color: rgba(24, 121, 78, 0.16);
+}
+
+.auth-status.is-error {
+  color: var(--danger);
+  background: rgba(148, 37, 37, 0.08);
+  border-color: rgba(148, 37, 37, 0.16);
 }
 
 .auth-ready {
@@ -418,6 +443,23 @@ button {
 
 .auth-mode-button {
   justify-content: center;
+  min-height: 48px;
+}
+
+.auth-mode-button.is-active {
+  background: #2b1b10;
+  color: #fff8f0;
+  border-color: transparent;
+  box-shadow: 0 12px 24px rgba(43, 27, 16, 0.18);
+}
+
+.auth-mode-button:disabled,
+.primary-button:disabled,
+.ghost-button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+  transform: none;
+  box-shadow: none;
 }
 
 .auth-actions {
