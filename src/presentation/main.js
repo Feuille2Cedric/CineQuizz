@@ -256,6 +256,7 @@ function setAnswerFieldState(state = "") {
 
 function setAuthMode(mode) {
   uiState.authMode = mode === "sign-up" ? "sign-up" : "sign-in";
+  dom.authForm.dataset.mode = uiState.authMode;
   setAuthStatus("");
   dom.authPasswordInput.value = "";
   renderAuthMode();
@@ -279,6 +280,7 @@ function renderAuthMode() {
 
   dom.authModeSignin.classList.toggle("is-active", !isSignUp);
   dom.authModeSignup.classList.toggle("is-active", isSignUp);
+  dom.authForm.dataset.mode = uiState.authMode;
   dom.authModeSignin.disabled = uiState.authBusy;
   dom.authModeSignup.disabled = uiState.authBusy;
   dom.authNicknameField.classList.toggle("is-hidden", !isSignUp);
@@ -625,6 +627,7 @@ async function main() {
 
   syncContributionMode();
   renderAuthMode();
+  dom.authForm.dataset.mode = uiState.authMode;
 
   async function ensureAppReady() {
     if (app) {
@@ -646,7 +649,7 @@ async function main() {
     try {
       await ensureAppReady();
       setAuthStatus("");
-      const action = uiState.authMode;
+      const action = dom.authForm.dataset.mode === "sign-up" ? "sign-up" : "sign-in";
       const identifier = dom.authEmailInput.value.trim();
       const password = dom.authPasswordInput.value;
       const preferredNickname = dom.authNicknameInput.value.trim();
