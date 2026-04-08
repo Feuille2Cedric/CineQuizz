@@ -24,6 +24,7 @@ const dom = {
   authNicknameInput: document.getElementById("auth-nickname-input"),
   authEmailInput: document.getElementById("auth-email-input"),
   authPasswordInput: document.getElementById("auth-password-input"),
+  adminBadge: document.getElementById("admin-badge"),
   authSession: document.getElementById("auth-session"),
   authEmailValue: document.getElementById("auth-email-value"),
   authSignoutButton: document.getElementById("auth-signout-button"),
@@ -307,6 +308,7 @@ function render(viewModel) {
   dom.authReadyEmail.textContent = viewModel.auth.email ?? "";
   dom.authSession.classList.toggle("is-hidden", !isSupabase || !viewModel.auth.isAuthenticated);
   dom.authEmailValue.textContent = viewModel.auth.email ?? "";
+  dom.adminBadge.classList.toggle("is-hidden", !viewModel.profile.isAdmin);
   dom.adminTabButton.classList.toggle("is-hidden", !viewModel.profile.isAdmin);
 
   if (!viewModel.profile.isAdmin && document.querySelector("#admin-tab.is-active")) {

@@ -104,6 +104,11 @@ button {
   color: var(--accent-dark);
 }
 
+.admin-pill {
+  background: rgba(24, 121, 78, 0.14);
+  color: var(--success);
+}
+
 .layout {
   display: block;
 }
@@ -131,6 +136,13 @@ button {
 .app-meta {
   display: grid;
   justify-items: end;
+  gap: 10px;
+}
+
+.meta-pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 10px;
 }
 
