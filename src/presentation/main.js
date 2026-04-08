@@ -361,6 +361,7 @@ function syncContributionMode() {
 function render(viewModel) {
   uiState.viewModel = viewModel;
   const difficultyStats = viewModel.stats.byDifficulty ?? EMPTY_DIFFICULTY_STATS;
+  renderAuthMode();
 
   const isSupabase = viewModel.mode === "supabase";
   const requiresAuth = isSupabase && !viewModel.auth.isAuthenticated;

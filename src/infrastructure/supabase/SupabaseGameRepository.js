@@ -577,7 +577,6 @@ export class SupabaseGameRepository {
     }
 
     const nickname = this.#resolveNickname(preferredNickname, user);
-    await this.#assertNicknameAvailable(nickname);
     await this.#createProfile(nickname);
     return this.#loadProfile();
   }
