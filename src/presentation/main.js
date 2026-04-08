@@ -114,6 +114,11 @@ const uiState = {
 };
 
 const RUNTIME_PREFERENCE_KEY = "cinequizz:runtime-preference";
+const EMPTY_DIFFICULTY_STATS = {
+  easy: { correct: 0, answered: 0 },
+  medium: { correct: 0, answered: 0 },
+  hard: { correct: 0, answered: 0 }
+};
 
 function looksLikeEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value ?? "").trim());
@@ -249,6 +254,19 @@ function setAnswerFieldState(state = "") {
   }
 }
 
+function setAuthMode(mode) {
+  uiState.authMode = mode === "sign-up" ? "sign-up" : "sign-in";
+  setAuthStatus("");
+  dom.authPasswordInput.value = "";
+  renderAuthMode();
+
+  if (uiState.authMode === "sign-up") {
+    dom.authNicknameInput.focus();
+  } else {
+    dom.authEmailInput.focus();
+  }
+}
+
 function renderAuthMode() {
   const isSignUp = uiState.authMode === "sign-up";
   const buttonLabel = uiState.authBusy
@@ -264,6 +282,8 @@ function renderAuthMode() {
   dom.authModeSignin.disabled = uiState.authBusy;
   dom.authModeSignup.disabled = uiState.authBusy;
   dom.authNicknameField.classList.toggle("is-hidden", !isSignUp);
+  dom.authNicknameField.hidden = !isSignUp;
+  dom.authNicknameField.setAttribute("aria-hidden", String(!isSignUp));
   dom.authNicknameInput.disabled = uiState.authBusy || !isSignUp;
   dom.authNicknameInput.required = isSignUp;
   dom.authEmailInput.disabled = uiState.authBusy;
@@ -340,6 +360,7 @@ function syncContributionMode() {
 
 function render(viewModel) {
   uiState.viewModel = viewModel;
+  const difficultyStats = viewModel.stats.byDifficulty ?? EMPTY_DIFFICULTY_STATS;
 
   const isSupabase = viewModel.mode === "supabase";
   const requiresAuth = isSupabase && !viewModel.auth.isAuthenticated;
@@ -404,9 +425,9 @@ function render(viewModel) {
   dom.statAnswered.textContent = viewModel.stats.totalAnswered;
   dom.statAccuracy.textContent = `${viewModel.stats.accuracy}%`;
   dom.statRemaining.textContent = viewModel.stats.remaining;
-  dom.statEasyRatio.textContent = `${viewModel.stats.byDifficulty.easy.correct} / ${viewModel.stats.byDifficulty.easy.answered}`;
-  dom.statMediumRatio.textContent = `${viewModel.stats.byDifficulty.medium.correct} / ${viewModel.stats.byDifficulty.medium.answered}`;
-  dom.statHardRatio.textContent = `${viewModel.stats.byDifficulty.hard.correct} / ${viewModel.stats.byDifficulty.hard.answered}`;
+  dom.statEasyRatio.textContent = `${difficultyStats.easy.correct} / ${difficultyStats.easy.answered}`;
+  dom.statMediumRatio.textContent = `${difficultyStats.medium.correct} / ${difficultyStats.medium.answered}`;
+  dom.statHardRatio.textContent = `${difficultyStats.hard.correct} / ${difficultyStats.hard.answered}`;
 
   dom.catalogEasy.textContent = viewModel.catalogCounts.easy;
   dom.catalogMedium.textContent = viewModel.catalogCounts.medium;
@@ -601,60 +622,28 @@ async function main() {
     }
   }
 
-  await bootApplication();
   syncContributionMode();
   renderAuthMode();
 
-  dom.tabs.forEach((tabButton) => {
-    tabButton.addEventListener("click", () => activateTab(tabButton.dataset.tabTarget));
-  });
-
-  [dom.authModeSignin, dom.authModeSignup].forEach((button) => {
-    button.addEventListener("click", () => {
-      uiState.authMode = button.dataset.authMode;
-      setAuthStatus("");
-      dom.authPasswordInput.value = "";
-      renderAuthMode();
-
-      if (uiState.authMode === "sign-up") {
-        dom.authNicknameInput.focus();
-      } else {
-        dom.authEmailInput.focus();
-      }
-    });
-  });
-
-  dom.difficultyButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      render(app.setDifficulty(button.dataset.difficulty));
-      dom.answerInput.value = "";
-      if (!dom.answerInput.disabled) {
-        dom.answerInput.focus();
-      }
-    });
-  });
-
-  dom.nicknameForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    try {
-      const nickname = dom.nicknameInput.value.trim();
-
-      if (!nickname || nickname.length < 3) {
-        dom.dataMessage.textContent = "Le pseudo doit faire au moins 3 caracteres.";
-        return;
-      }
-
-      window.localStorage.setItem("cinequizz:last-nickname", nickname);
-      render(await app.updateNickname(nickname));
-    } catch (error) {
-      reportUiError(error);
+  async function ensureAppReady() {
+    if (app) {
+      return;
     }
+
+    await bootApplication();
+  }
+
+  [dom.authModeSignin, dom.authModeSignup].filter(Boolean).forEach((button) => {
+    button.addEventListener("click", () => {
+      setAuthMode(button.dataset.authMode);
+    });
   });
 
   dom.authForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     try {
+      await ensureAppReady();
       setAuthStatus("");
       const action = uiState.authMode;
       const identifier = dom.authEmailInput.value.trim();
@@ -716,6 +705,39 @@ async function main() {
       reportAuthError(error);
     } finally {
       setAuthBusy(false);
+    }
+  });
+
+  await bootApplication();
+
+  dom.tabs.forEach((tabButton) => {
+    tabButton.addEventListener("click", () => activateTab(tabButton.dataset.tabTarget));
+  });
+
+  dom.difficultyButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      render(app.setDifficulty(button.dataset.difficulty));
+      dom.answerInput.value = "";
+      if (!dom.answerInput.disabled) {
+        dom.answerInput.focus();
+      }
+    });
+  });
+
+  dom.nicknameForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    try {
+      const nickname = dom.nicknameInput.value.trim();
+
+      if (!nickname || nickname.length < 3) {
+        dom.dataMessage.textContent = "Le pseudo doit faire au moins 3 caracteres.";
+        return;
+      }
+
+      window.localStorage.setItem("cinequizz:last-nickname", nickname);
+      render(await app.updateNickname(nickname));
+    } catch (error) {
+      reportUiError(error);
     }
   });
 
