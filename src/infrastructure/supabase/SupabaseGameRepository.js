@@ -389,7 +389,7 @@ export class SupabaseGameRepository {
       metadata?.distractors ?? []
     );
 
-    const { error } = await this.client
+    const { data, error } = await this.client
       .from("questions")
       .update({
         prompt: prompt.trim(),
@@ -398,10 +398,18 @@ export class SupabaseGameRepository {
         difficulty,
         metadata: normalizedMetadata
       })
-      .eq("id", questionId);
+      .eq("id", questionId)
+      .select("id")
+      .maybeSingle();
 
     if (error) {
       throw new Error(`Mise a jour de la question impossible: ${error.message}`);
+    }
+
+    if (!data?.id) {
+      throw new Error(
+        "Mise a jour de la question impossible: aucune ligne n'a ete modifiee. Verifiez les policies admin et que votre profil a bien is_admin = true."
+      );
     }
   }
 
