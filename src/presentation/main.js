@@ -62,8 +62,12 @@ const dom = {
   editPanel: document.getElementById("edit-panel"),
   editForm: document.getElementById("edit-form"),
   editPrompt: document.getElementById("edit-prompt"),
+  editQuestionType: document.getElementById("edit-question-type"),
   editAnswer: document.getElementById("edit-answer"),
+  editAliasesFields: document.getElementById("edit-aliases-fields"),
   editAliases: document.getElementById("edit-aliases"),
+  editMcqFields: document.getElementById("edit-mcq-fields"),
+  editDistractors: document.getElementById("edit-distractors"),
   editDifficulty: document.getElementById("edit-difficulty"),
   clearOverrideButton: document.getElementById("clear-override-button"),
   contributionStatus: document.getElementById("contribution-status"),
@@ -74,6 +78,7 @@ const dom = {
   questionFeedbackReason: document.getElementById("question-feedback-reason"),
   feedbackEditFields: document.getElementById("feedback-edit-fields"),
   feedbackPrompt: document.getElementById("feedback-prompt"),
+  feedbackQuestionType: document.getElementById("feedback-question-type"),
   feedbackAnswer: document.getElementById("feedback-answer"),
   feedbackAliasesFields: document.getElementById("feedback-aliases-fields"),
   feedbackAliases: document.getElementById("feedback-aliases"),
@@ -419,11 +424,17 @@ function fillEditForm(question) {
     return;
   }
 
+  const isMcq = questionUsesMultipleChoice(question);
   dom.editForm.dataset.questionId = question.id;
   dom.editPrompt.value = question.prompt;
+  dom.editQuestionType.value = isMcq ? "mcq" : "text";
   dom.editAnswer.value = question.answer;
-  dom.editAliases.value = question.acceptedAnswers.slice(1).join(", ");
+  dom.editAliases.value = !isMcq ? question.acceptedAnswers.slice(1).join(", ") : "";
+  dom.editDistractors.value = isMcq
+    ? (question.metadata?.distractors ?? []).map((value) => String(value ?? "").trim()).filter(Boolean).join("\n")
+    : "";
   dom.editDifficulty.value = question.difficulty;
+  syncAdminEditMode();
 }
 
 function fillContributionEditForm(question, canRevealAnswer = false) {
@@ -433,6 +444,7 @@ function fillContributionEditForm(question, canRevealAnswer = false) {
 
   const isMcq = questionUsesMultipleChoice(question);
   dom.feedbackPrompt.value = question.prompt;
+  dom.feedbackQuestionType.value = isMcq ? "mcq" : "text";
   dom.feedbackAnswer.value = canRevealAnswer ? question.answer : "";
   dom.feedbackAnswer.placeholder = canRevealAnswer
     ? ""
@@ -442,6 +454,7 @@ function fillContributionEditForm(question, canRevealAnswer = false) {
     ? (question.metadata?.distractors ?? []).map((value) => String(value ?? "").trim()).filter(Boolean).join("\n")
     : "";
   dom.feedbackDifficulty.value = question.difficulty;
+  syncContributionMode();
 }
 
 function questionUsesMultipleChoice(question) {
@@ -482,14 +495,23 @@ function showFieldError(field, message) {
   field.focus();
 }
 
+function syncAdminEditMode() {
+  const isMcq = dom.editQuestionType.value === "mcq";
+  setContributionFieldVisibility(dom.editAliasesFields, !isMcq);
+  setContributionFieldVisibility(dom.editMcqFields, isMcq);
+  dom.editAliases.disabled = isMcq;
+  dom.editDistractors.disabled = !isMcq;
+}
+
 function syncContributionMode() {
   const wantsEdit = dom.questionFeedbackType.value === "edit";
-  const isMcq = questionUsesMultipleChoice(uiState.viewModel?.currentQuestion);
+  const isMcq = dom.feedbackQuestionType.value === "mcq";
 
   setContributionFieldVisibility(dom.feedbackEditFields, wantsEdit);
   setContributionFieldVisibility(dom.feedbackAliasesFields, wantsEdit && !isMcq);
   setContributionFieldVisibility(dom.feedbackMcqFields, wantsEdit && isMcq);
 
+  dom.feedbackQuestionType.disabled = !wantsEdit;
   dom.feedbackAliases.disabled = !wantsEdit || isMcq;
   dom.feedbackDistractors.disabled = !wantsEdit || !isMcq;
 }
@@ -592,6 +614,7 @@ function render(viewModel) {
   dom.contributionToggleButton.classList.toggle("is-hidden", !canContribute || !activeQuestionId);
   dom.editToggleButton.classList.toggle("is-hidden", !canEditQuestion);
   dom.adminDeleteQuestionButton.classList.toggle("is-hidden", !canAdministerQuestion);
+  dom.clearOverrideButton.classList.toggle("is-hidden", viewModel.profile.isAdmin);
   dom.editToggleButton.textContent = uiState.editPanelOpen
     ? "Masquer l'editeur"
     : "Corriger cette question";
@@ -1064,7 +1087,9 @@ async function main() {
   });
 
   [
+    dom.editQuestionType,
     dom.feedbackPrompt,
+    dom.feedbackQuestionType,
     dom.feedbackAnswer,
     dom.feedbackAliases,
     dom.feedbackDistractors,
@@ -1083,6 +1108,14 @@ async function main() {
 
   dom.newQuestionType.addEventListener("change", () => {
     syncNewQuestionMode();
+  });
+
+  dom.feedbackQuestionType.addEventListener("change", () => {
+    syncContributionMode();
+  });
+
+  dom.editQuestionType.addEventListener("change", () => {
+    syncAdminEditMode();
   });
 
   dom.questionFeedbackForm.addEventListener("submit", async (event) => {
@@ -1116,7 +1149,7 @@ async function main() {
 
       if (
         requestType === "edit" &&
-        questionUsesMultipleChoice(uiState.viewModel?.currentQuestion) &&
+        dom.feedbackQuestionType.value === "mcq" &&
         dom.feedbackDistractors.value
           .split(/\r?\n/)
           .map((value) => value.trim())
@@ -1131,6 +1164,7 @@ async function main() {
         questionId: currentQuestionId,
         reason: trimmedReason,
         prompt: dom.feedbackPrompt.value,
+        questionType: dom.feedbackQuestionType.value,
         answer: dom.feedbackAnswer.value,
         aliases: dom.feedbackAliases.value
           .split(",")
@@ -1243,6 +1277,17 @@ async function main() {
         return;
       }
 
+      if (
+        dom.editQuestionType.value === "mcq" &&
+        dom.editDistractors.value
+          .split(/\r?\n/)
+          .map((value) => value.trim())
+          .filter(Boolean).length < 2
+      ) {
+        showFieldError(dom.editDistractors, "Ajoutez au moins 2 fausses reponses.");
+        return;
+      }
+
       const questionId = dom.editForm.dataset.questionId;
       uiState.editPanelOpen = false;
 
@@ -1250,15 +1295,22 @@ async function main() {
         await app.saveQuestionOverride({
           questionId,
           prompt: dom.editPrompt.value,
+          questionType: dom.editQuestionType.value,
           answer: dom.editAnswer.value,
           aliases: dom.editAliases.value
             .split(",")
             .map((value) => value.trim())
             .filter(Boolean),
+          distractors: dom.editDistractors.value
+            .split(/\r?\n/)
+            .map((value) => value.trim())
+            .filter(Boolean),
           difficulty: dom.editDifficulty.value
         })
       );
-      dom.dataMessage.textContent = "Correction locale enregistree.";
+      dom.dataMessage.textContent = uiState.viewModel?.profile?.isAdmin
+        ? "Correction en base enregistree."
+        : "Correction locale enregistree.";
     } catch (error) {
       reportUiError(error);
     }

@@ -144,6 +144,27 @@ function normalizeChoiceList(values) {
   return [...new Set((values ?? []).map((value) => String(value ?? "").trim()).filter(Boolean))];
 }
 
+function buildQuestionMetadata(baseMetadata = {}, questionType = "text", distractors = []) {
+  const metadata = { ...(baseMetadata ?? {}) };
+  delete metadata.answerMode;
+  delete metadata.distractors;
+  delete metadata.mcqChoices;
+  delete metadata.mcq_choices;
+
+  if (questionType === "mcq") {
+    return {
+      ...metadata,
+      answerMode: "mcq",
+      distractors: normalizeChoiceList(distractors)
+    };
+  }
+
+  return {
+    ...metadata,
+    answerMode: "text"
+  };
+}
+
 export class QuizApp {
   constructor({ catalogRepository, patchRepository, gameRepository }) {
     this.catalogRepository = catalogRepository;
@@ -310,6 +331,7 @@ export class QuizApp {
     questionId,
     reason,
     prompt,
+    questionType,
     answer,
     aliases,
     distractors,
@@ -331,19 +353,26 @@ export class QuizApp {
       throw new Error("Merci d'expliquer votre demande.");
     }
 
-    const isMcq = shouldUseMultipleChoice(currentQuestion);
+    const effectiveQuestionType =
+      type === "edit"
+        ? questionType === "mcq"
+          ? "mcq"
+          : "text"
+        : shouldUseMultipleChoice(currentQuestion)
+          ? "mcq"
+          : "text";
     const trimmedPrompt = prompt.trim();
     const trimmedAnswer = answer.trim();
     const effectivePrompt = type === "edit" ? trimmedPrompt || currentQuestion.prompt : null;
     const effectiveAnswer = type === "edit" ? trimmedAnswer || currentQuestion.answer : null;
     const effectiveAliases =
-      type === "edit" && !isMcq
+      type === "edit" && effectiveQuestionType !== "mcq"
         ? trimmedAnswer
           ? aliases
           : currentQuestion.acceptedAnswers.slice(1)
         : [];
     const effectiveDistractors =
-      type === "edit" && isMcq
+      type === "edit" && effectiveQuestionType === "mcq"
         ? (distractors ?? []).length
           ? distractors
           : currentQuestion.metadata?.distractors ?? []
@@ -353,7 +382,7 @@ export class QuizApp {
       throw new Error("Une proposition de modification doit contenir une question et une reponse.");
     }
 
-    if (type === "edit" && isMcq && effectiveDistractors.length < 2) {
+    if (type === "edit" && effectiveQuestionType === "mcq" && effectiveDistractors.length < 2) {
       throw new Error("Une proposition de QCM doit contenir au moins 2 fausses reponses.");
     }
 
@@ -367,10 +396,10 @@ export class QuizApp {
       proposedAcceptedAnswers: effectiveAliases,
       proposedDifficulty: type === "edit" ? difficulty : null,
       proposedMetadata:
-        type === "edit" && isMcq
+        type === "edit"
           ? {
-              answerMode: "mcq",
-              distractors: effectiveDistractors
+              answerMode: effectiveQuestionType,
+              distractors: effectiveQuestionType === "mcq" ? effectiveDistractors : []
             }
           : {}
     });
@@ -458,22 +487,46 @@ export class QuizApp {
     return this.getViewModel();
   }
 
-  async saveQuestionOverride({ questionId, prompt, answer, aliases, difficulty }) {
+  async saveQuestionOverride({ questionId, prompt, questionType, answer, aliases, distractors, difficulty }) {
     const currentQuestion = this.#findQuestion(questionId);
 
     if (!currentQuestion) {
       throw new Error("Question introuvable.");
     }
 
+    const effectiveQuestionType = questionType === "mcq" ? "mcq" : "text";
     const acceptedAnswers = [answer, ...aliases]
       .map((value) => String(value ?? "").trim())
       .filter(Boolean);
+    const metadata = buildQuestionMetadata(
+      currentQuestion.metadata,
+      effectiveQuestionType,
+      distractors
+    );
+
+    if (this.state.profile.isAdmin && typeof this.gameRepository.updateQuestion === "function") {
+      await this.gameRepository.updateQuestion({
+        questionId,
+        prompt: prompt.trim(),
+        answer: answer.trim(),
+        acceptedAnswers,
+        difficulty,
+        metadata
+      });
+
+      await this.#reloadQuestions();
+      this.state.currentResult = null;
+      this.state.currentQuestion = this.#resolveQuestionAfterEdition(questionId);
+      this.state.currentChoices = this.#buildAnswerChoices(this.state.currentQuestion);
+      return this.getViewModel();
+    }
 
     this.patchRepository.saveOverride(questionId, {
       prompt: prompt.trim(),
       answer: answer.trim(),
       acceptedAnswers,
-      difficulty
+      difficulty,
+      metadata
     });
 
     await this.#reopenQuestionForReplay(questionId);

@@ -18,6 +18,27 @@ function sanitizeChoiceList(values = []) {
   return [...new Set((values ?? []).map((value) => String(value ?? "").trim()).filter(Boolean))];
 }
 
+function sanitizeQuestionMetadata(baseMetadata = {}, questionType = "text", distractors = []) {
+  const metadata = { ...(baseMetadata ?? {}) };
+  delete metadata.answerMode;
+  delete metadata.distractors;
+  delete metadata.mcqChoices;
+  delete metadata.mcq_choices;
+
+  if (questionType === "mcq") {
+    return {
+      ...metadata,
+      answerMode: "mcq",
+      distractors: sanitizeChoiceList(distractors)
+    };
+  }
+
+  return {
+    ...metadata,
+    answerMode: "text"
+  };
+}
+
 function slugify(value) {
   return String(value ?? "")
     .normalize("NFD")
@@ -358,6 +379,32 @@ export class SupabaseGameRepository {
     }
   }
 
+  async updateQuestion({ questionId, prompt, answer, acceptedAnswers, difficulty, metadata }) {
+    this.#assertAdmin();
+
+    const questionType = metadata?.answerMode === "mcq" ? "mcq" : "text";
+    const normalizedMetadata = sanitizeQuestionMetadata(
+      metadata,
+      questionType,
+      metadata?.distractors ?? []
+    );
+
+    const { error } = await this.client
+      .from("questions")
+      .update({
+        prompt: prompt.trim(),
+        answer: answer.trim(),
+        accepted_answers: sanitizeAnswerList(answer, acceptedAnswers),
+        difficulty,
+        metadata: normalizedMetadata
+      })
+      .eq("id", questionId);
+
+    if (error) {
+      throw new Error(`Mise a jour de la question impossible: ${error.message}`);
+    }
+  }
+
   async reviewModerationRequest({ requestId, decision, adminNote = "" }) {
     this.#assertAdmin();
 
@@ -424,6 +471,13 @@ export class SupabaseGameRepository {
           throw new Error(`Chargement de la question impossible: ${existingQuestionError.message}`);
         }
 
+        const questionType =
+          request.proposed_metadata?.answerMode === "mcq" ||
+          existingQuestion?.metadata?.answerMode === "mcq" ||
+          (Array.isArray(existingQuestion?.metadata?.distractors) && existingQuestion.metadata.distractors.length > 0)
+            ? "mcq"
+            : "text";
+
         const { error } = await this.client
           .from("questions")
           .update({
@@ -434,10 +488,11 @@ export class SupabaseGameRepository {
               request.proposed_accepted_answers ?? []
             ),
             difficulty: request.proposed_difficulty,
-            metadata: {
-              ...(existingQuestion?.metadata ?? {}),
-              ...(request.proposed_metadata ?? {})
-            }
+            metadata: sanitizeQuestionMetadata(
+              existingQuestion?.metadata ?? {},
+              questionType,
+              request.proposed_metadata?.distractors ?? []
+            )
           })
           .eq("id", request.question_id);
 
@@ -448,6 +503,7 @@ export class SupabaseGameRepository {
 
       if (request.request_type === "new") {
         resultingQuestionId = this.#buildCommunityQuestionId(request.proposed_prompt);
+        const questionType = request.proposed_metadata?.answerMode === "mcq" ? "mcq" : "text";
 
         const { error } = await this.client.from("questions").insert({
           id: resultingQuestionId,
@@ -458,12 +514,15 @@ export class SupabaseGameRepository {
             request.proposed_answer,
             request.proposed_accepted_answers ?? []
           ),
-          metadata: {
-            ...(request.proposed_metadata ?? {}),
-            source: "community-suggestion",
-            requestId: request.id,
-            requesterNickname: request.requester_nickname
-          },
+          metadata: sanitizeQuestionMetadata(
+            {
+              source: "community-suggestion",
+              requestId: request.id,
+              requesterNickname: request.requester_nickname
+            },
+            questionType,
+            request.proposed_metadata?.distractors ?? []
+          ),
           is_active: true
         });
 
