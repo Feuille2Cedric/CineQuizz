@@ -13,7 +13,8 @@ function emptyDifficultyStats() {
   return {
     easy: { correct: 0, answered: 0 },
     medium: { correct: 0, answered: 0 },
-    hard: { correct: 0, answered: 0 }
+    hard: { correct: 0, answered: 0 },
+    cinephile: { correct: 0, answered: 0 }
   };
 }
 
@@ -21,7 +22,8 @@ function toDifficultyLabel(difficulty) {
   return {
     easy: "Facile",
     medium: "Moyen",
-    hard: "Difficile"
+    hard: "Difficile",
+    cinephile: "Cinephile"
   }[difficulty] ?? difficulty;
 }
 
@@ -211,7 +213,8 @@ export class QuizApp {
     const difficultyCounts = {
       easy: 0,
       medium: 0,
-      hard: 0
+      hard: 0,
+      cinephile: 0
     };
 
     for (const question of this.state.questions) {

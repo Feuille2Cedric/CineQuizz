@@ -3,7 +3,7 @@
 Application de quiz cinema statique, compatible GitHub Pages, avec:
 
 - reponse libre insensible a la casse, aux accents et a la ponctuation
-- filtre par difficulte `easy`, `medium`, `hard`
+- filtre par difficulte `easy`, `medium`, `hard`, `cinephile`
 - score de bonnes reponses
 - questions deja traitees qui ne reapparaissent plus pour un meme profil
 - classement global via Supabase
@@ -34,6 +34,7 @@ Generation actuelle:
 - 667 faciles
 - 667 moyennes
 - 666 difficiles
+- les questions `cinephile` peuvent etre ajoutees manuellement
 
 Pour regenerer le catalogue:
 
@@ -74,7 +75,7 @@ Ajoutez des objets complets dans [`data/source/manual-questions.json`](/c:/Users
 [
   {
     "id": "manual-example",
-    "difficulty": "hard",
+    "difficulty": "cinephile",
     "prompt": "Quel film a remporte la Palme d'Or en 1994 ?",
     "answer": "Pulp Fiction",
     "acceptedAnswers": ["Pulp Fiction"],

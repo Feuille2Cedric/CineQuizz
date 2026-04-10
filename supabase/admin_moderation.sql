@@ -14,7 +14,7 @@ create table if not exists public.question_moderation_requests (
   proposed_prompt text,
   proposed_answer text,
   proposed_accepted_answers jsonb not null default '[]'::jsonb,
-  proposed_difficulty text check (proposed_difficulty in ('easy', 'medium', 'hard')),
+  proposed_difficulty text check (proposed_difficulty in ('easy', 'medium', 'hard', 'cinephile')),
   proposed_metadata jsonb not null default '{}'::jsonb,
   question_snapshot jsonb not null default '{}'::jsonb,
   admin_note text,

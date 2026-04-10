@@ -5,7 +5,8 @@ function toStats(profile) {
     byDifficulty: profile?.byDifficulty ?? {
       easy: { correct: 0, answered: 0 },
       medium: { correct: 0, answered: 0 },
-      hard: { correct: 0, answered: 0 }
+      hard: { correct: 0, answered: 0 },
+      cinephile: { correct: 0, answered: 0 }
     }
   };
 }
@@ -697,7 +698,8 @@ export class SupabaseGameRepository {
         byDifficulty: {
           easy: { correct: 0, answered: 0 },
           medium: { correct: 0, answered: 0 },
-          hard: { correct: 0, answered: 0 }
+          hard: { correct: 0, answered: 0 },
+          cinephile: { correct: 0, answered: 0 }
         }
       },
       answeredQuestionIds: [],
@@ -805,7 +807,8 @@ export class SupabaseGameRepository {
     const stats = {
       easy: { correct: 0, answered: 0 },
       medium: { correct: 0, answered: 0 },
-      hard: { correct: 0, answered: 0 }
+      hard: { correct: 0, answered: 0 },
+      cinephile: { correct: 0, answered: 0 }
     };
 
     if (!this.userId) {

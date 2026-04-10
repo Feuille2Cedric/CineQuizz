@@ -16,6 +16,8 @@ TARGET_COUNTS = {
     "hard": 666,
 }
 
+DIFFICULTY_LEVELS = ("easy", "medium", "hard", "cinephile")
+
 def load_json(path: Path, fallback):
     if not path.exists():
         return fallback
@@ -440,7 +442,7 @@ def select_interleaved(question_groups, target_count):
 
 
 def build_question_bank(movies, manual_questions):
-    manual_by_difficulty = {"easy": [], "medium": [], "hard": []}
+    manual_by_difficulty = {difficulty: [] for difficulty in DIFFICULTY_LEVELS}
 
     for question in manual_questions:
         difficulty = question["difficulty"]
@@ -449,17 +451,19 @@ def build_question_bank(movies, manual_questions):
         manual_by_difficulty[difficulty].append(question)
 
     director_contexts = build_director_contexts(movies)
-    movie_groups = {"easy": [], "medium": [], "hard": []}
+    movie_groups = {difficulty: [] for difficulty in DIFFICULTY_LEVELS}
 
     for movie in movies:
         generated = build_movie_questions(movie, director_contexts[movie["id"]])
         for difficulty in movie_groups:
-            movie_groups[difficulty].append(generated[difficulty])
+            if difficulty in generated:
+                movie_groups[difficulty].append(generated[difficulty])
 
     selected_questions = []
 
-    for difficulty, target_count in TARGET_COUNTS.items():
+    for difficulty in DIFFICULTY_LEVELS:
         manual_count = len(manual_by_difficulty[difficulty])
+        target_count = TARGET_COUNTS.get(difficulty, manual_count)
 
         if manual_count > target_count:
             raise ValueError(
@@ -558,14 +562,15 @@ def main():
     write_question_bank_json(questions)
     write_supabase_seed_sql(questions)
 
-    difficulty_counts = {"easy": 0, "medium": 0, "hard": 0}
+    difficulty_counts = {difficulty: 0 for difficulty in DIFFICULTY_LEVELS}
 
     for question in questions:
         difficulty_counts[question["difficulty"]] += 1
 
     print(
         f"Question bank generated: {len(questions)} questions "
-        f"(easy={difficulty_counts['easy']}, medium={difficulty_counts['medium']}, hard={difficulty_counts['hard']})"
+        f"(easy={difficulty_counts['easy']}, medium={difficulty_counts['medium']}, "
+        f"hard={difficulty_counts['hard']}, cinephile={difficulty_counts['cinephile']})"
     )
 
 

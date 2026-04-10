@@ -106,15 +106,19 @@ const dom = {
   statEasyRatio: document.getElementById("stat-easy-ratio"),
   statMediumRatio: document.getElementById("stat-medium-ratio"),
   statHardRatio: document.getElementById("stat-hard-ratio"),
+  statCinephileRatio: document.getElementById("stat-cinephile-ratio"),
   catalogEasy: document.getElementById("catalog-easy"),
   catalogMedium: document.getElementById("catalog-medium"),
   catalogHard: document.getElementById("catalog-hard"),
+  catalogCinephile: document.getElementById("catalog-cinephile"),
   catalogTotal: document.getElementById("catalog-total"),
   questionPackInput: document.getElementById("question-pack-input"),
   exportOverridesButton: document.getElementById("export-overrides-button"),
   resetCustomDataButton: document.getElementById("reset-custom-data-button"),
   dataMessage: document.getElementById("data-message")
 };
+
+const DIFFICULTY_LEVELS = ["easy", "medium", "hard", "cinephile"];
 
 const uiState = {
   editPanelOpen: false,
@@ -132,7 +136,8 @@ const RUNTIME_PREFERENCE_KEY = "cinequizz:runtime-preference";
 const EMPTY_DIFFICULTY_STATS = {
   easy: { correct: 0, answered: 0 },
   medium: { correct: 0, answered: 0 },
-  hard: { correct: 0, answered: 0 }
+  hard: { correct: 0, answered: 0 },
+  cinephile: { correct: 0, answered: 0 }
 };
 
 function looksLikeEmail(value) {
@@ -152,7 +157,8 @@ function difficultyLabel(difficulty) {
   return {
     easy: "Facile",
     medium: "Moyen",
-    hard: "Difficile"
+    hard: "Difficile",
+    cinephile: "Cinephile"
   }[difficulty] ?? difficulty;
 }
 
@@ -597,10 +603,12 @@ function render(viewModel) {
   dom.statEasyRatio.textContent = `${difficultyStats.easy.correct} / ${difficultyStats.easy.answered}`;
   dom.statMediumRatio.textContent = `${difficultyStats.medium.correct} / ${difficultyStats.medium.answered}`;
   dom.statHardRatio.textContent = `${difficultyStats.hard.correct} / ${difficultyStats.hard.answered}`;
+  dom.statCinephileRatio.textContent = `${difficultyStats.cinephile.correct} / ${difficultyStats.cinephile.answered}`;
 
   dom.catalogEasy.textContent = viewModel.catalogCounts.easy;
   dom.catalogMedium.textContent = viewModel.catalogCounts.medium;
   dom.catalogHard.textContent = viewModel.catalogCounts.hard;
+  dom.catalogCinephile.textContent = viewModel.catalogCounts.cinephile;
   dom.catalogTotal.textContent = viewModel.catalogCounts.total;
 
   for (const button of dom.difficultyButtons) {
@@ -952,6 +960,10 @@ async function main() {
 
   dom.difficultyButtons.forEach((button) => {
     button.addEventListener("click", () => {
+      if (!DIFFICULTY_LEVELS.includes(button.dataset.difficulty)) {
+        return;
+      }
+
       render(app.setDifficulty(button.dataset.difficulty));
       dom.answerInput.value = "";
       if (!dom.answerInput.disabled) {

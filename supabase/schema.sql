@@ -1,6 +1,6 @@
 create table if not exists public.questions (
   id text primary key,
-  difficulty text not null check (difficulty in ('easy', 'medium', 'hard')),
+  difficulty text not null check (difficulty in ('easy', 'medium', 'hard', 'cinephile')),
   prompt text not null,
   answer text not null,
   accepted_answers jsonb not null default '[]'::jsonb,
@@ -30,7 +30,7 @@ create table if not exists public.question_moderation_requests (
   proposed_prompt text,
   proposed_answer text,
   proposed_accepted_answers jsonb not null default '[]'::jsonb,
-  proposed_difficulty text check (proposed_difficulty in ('easy', 'medium', 'hard')),
+  proposed_difficulty text check (proposed_difficulty in ('easy', 'medium', 'hard', 'cinephile')),
   proposed_metadata jsonb not null default '{}'::jsonb,
   question_snapshot jsonb not null default '{}'::jsonb,
   admin_note text,
@@ -45,7 +45,7 @@ alter table public.question_moderation_requests
 create table if not exists public.user_question_progress (
   user_id uuid not null references auth.users(id) on delete cascade,
   question_id text not null,
-  difficulty text not null check (difficulty in ('easy', 'medium', 'hard')),
+  difficulty text not null check (difficulty in ('easy', 'medium', 'hard', 'cinephile')),
   is_correct boolean not null,
   normalized_answer text,
   answered_at timestamptz not null default timezone('utc', now()),
