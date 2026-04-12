@@ -299,6 +299,7 @@ function escapeAttribute(value) {
 function renderAnswerChoices(viewModel) {
   const isMcq = viewModel.answerMode === "mcq";
   const selectedChoice = dom.answerForm.dataset.selectedChoice ?? "";
+  const isLocked = Boolean(viewModel.currentResult);
 
   dom.answerForm.dataset.answerMode = isMcq ? "mcq" : "text";
   dom.answerChoiceGroup.classList.toggle("is-hidden", !isMcq);
@@ -339,6 +340,7 @@ function renderAnswerChoices(viewModel) {
           type="button"
           class="${classes}"
           data-answer-choice="${escapeAttribute(choice)}"
+          ${isLocked ? "disabled" : ""}
         >
           ${escapeHtml(choice)}
         </button>
@@ -651,8 +653,8 @@ function render(viewModel) {
     setFeedbackMessage("Changez de difficulte ou importez de nouvelles questions.");
   } else {
     dom.questionText.textContent = viewModel.currentQuestion.prompt;
-    dom.answerInput.disabled = viewModel.answerMode === "mcq";
-    dom.answerSubmitButton.disabled = false;
+    dom.answerInput.disabled = viewModel.answerMode === "mcq" || Boolean(viewModel.currentResult);
+    dom.answerSubmitButton.disabled = Boolean(viewModel.currentResult);
     dom.nextQuestionButton.disabled = false;
     fillEditForm(viewModel.currentQuestion);
 
@@ -1045,6 +1047,24 @@ async function main() {
           : dom.answerInput.value.trim();
 
       render(await app.submitAnswer(submittedAnswer));
+    } catch (error) {
+      reportUiError(error);
+    }
+  });
+
+  dom.answerInput.addEventListener("keydown", async (event) => {
+    if (event.key !== "Enter" || event.shiftKey || event.ctrlKey || event.altKey || event.metaKey) {
+      return;
+    }
+
+    if (dom.answerInput.disabled || uiState.viewModel?.currentResult) {
+      return;
+    }
+
+    event.preventDefault();
+
+    try {
+      render(await app.submitAnswer(dom.answerInput.value.trim()));
     } catch (error) {
       reportUiError(error);
     }
