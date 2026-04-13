@@ -846,6 +846,41 @@ button {
   color: var(--danger);
 }
 
+.about-hero-card h3 {
+  margin: 6px 0 10px;
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 3vw, 2.4rem);
+  line-height: 0.96;
+}
+
+.about-grid,
+.about-columns {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.about-grid {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.about-columns {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.about-card {
+  min-height: 100%;
+}
+
+.about-list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.about-list li + li {
+  margin-top: 10px;
+}
+
 .contribution-card,
 .admin-card {
   min-height: 100%;

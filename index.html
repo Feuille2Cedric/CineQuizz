@@ -129,6 +129,7 @@
           <button class="tab is-active" data-tab-target="quiz-tab">Quiz</button>
           <button class="tab" data-tab-target="contributions-tab">Contributions</button>
           <button class="tab" data-tab-target="leaderboard-tab">Classement</button>
+          <button class="tab" data-tab-target="about-tab">A propos</button>
           <button class="tab" data-tab-target="data-tab">Donnees</button>
           <button id="admin-tab-button" class="tab is-hidden" data-tab-target="admin-tab">Admin</button>
         </nav>
@@ -590,6 +591,112 @@
             </div>
 
             <pre id="data-message" class="data-message"></pre>
+          </section>
+
+          <section id="about-tab" class="tab-panel">
+            <div class="section-heading">
+              <h2>A propos</h2>
+              <p>
+                Vue d'ensemble de CineQuizz: quiz, progression, contributions, moderation et donnees.
+              </p>
+            </div>
+
+            <article class="data-card data-card-wide about-hero-card">
+              <p class="eyebrow">CineQuizz</p>
+              <h3>Un quiz cinema avec progression, classement et moderation communautaire.</h3>
+              <p>
+                L'application fonctionne en mode local ou avec Supabase. En mode Supabase, chaque
+                utilisateur retrouve sa progression, son pseudo, ses stats et peut envoyer des
+                propositions a valider par un administrateur.
+              </p>
+            </article>
+
+            <div class="about-grid">
+              <article class="data-card about-card">
+                <h3>Quiz</h3>
+                <ul class="about-list">
+                  <li>4 difficultes: Facile, Moyen, Difficile et Cinephile.</li>
+                  <li>Questions normales et QCM dans le meme flux.</li>
+                  <li>Validation par bouton ou touche Entree pour les reponses texte.</li>
+                  <li>Apres validation, la reponse est verrouillee jusqu'a la question suivante.</li>
+                  <li>Le catalogue affiche les questions restantes et le total par difficulte.</li>
+                </ul>
+              </article>
+
+              <article class="data-card about-card">
+                <h3>Progression</h3>
+                <ul class="about-list">
+                  <li>Le score suit les bonnes reponses, les reponses totales et la precision.</li>
+                  <li>Les statistiques sont detaillees par difficulte.</li>
+                  <li>La progression d'une question peut etre reouverte si besoin.</li>
+                  <li>En mode local, les donnees restent dans le navigateur.</li>
+                  <li>En mode Supabase, elles sont liees au compte connecte.</li>
+                </ul>
+              </article>
+
+              <article class="data-card about-card">
+                <h3>Comptes et modes</h3>
+                <ul class="about-list">
+                  <li>Mode local pour tester rapidement sans compte.</li>
+                  <li>Mode Supabase pour partager progression, pseudo et classement.</li>
+                  <li>Connexion via Supabase Auth avec pseudo public et session persistante.</li>
+                  <li>Le pseudo peut etre mis a jour apres connexion.</li>
+                </ul>
+              </article>
+
+              <article class="data-card about-card">
+                <h3>Contributions</h3>
+                <ul class="about-list">
+                  <li>Signaler un probleme sur une question existante.</li>
+                  <li>Proposer une modification de question normale ou de QCM.</li>
+                  <li>Proposer une nouvelle question avec difficulte et type associes.</li>
+                  <li>Les formulaires distinguent les alias de reponse et les distracteurs QCM.</li>
+                </ul>
+              </article>
+
+              <article class="data-card about-card">
+                <h3>Administration</h3>
+                <ul class="about-list">
+                  <li>Validation, refus ou suppression des demandes de moderation.</li>
+                  <li>Correction directe d'une question depuis le quiz.</li>
+                  <li>Retrait d'une question du catalogue actif si necessaire.</li>
+                  <li>Traitement des propositions de nouvelles questions envoyees par les utilisateurs.</li>
+                </ul>
+              </article>
+
+              <article class="data-card about-card">
+                <h3>Donnees</h3>
+                <ul class="about-list">
+                  <li>Import de packs JSON de questions dans le navigateur.</li>
+                  <li>Export des corrections locales.</li>
+                  <li>Reinitialisation des donnees locales temporaires.</li>
+                  <li>Support des metadata de type `answerMode`, alias et distractors.</li>
+                </ul>
+              </article>
+            </div>
+
+            <div class="about-columns">
+              <article class="data-card about-card">
+                <h3>Securite</h3>
+                <ul class="about-list">
+                  <li>Les mots de passe sont geres par Supabase Auth.</li>
+                  <li>Les contraintes SQL et les policies RLS restent la vraie barriere de securite.</li>
+                  <li>Les droits d'ecriture sensibles sont restreints cote base.</li>
+                  <li>Le classement passe par une vue SQL minimale des profils publics.</li>
+                  <li>Les cles front sont injectees au build depuis GitHub Actions.</li>
+                </ul>
+              </article>
+
+              <article class="data-card about-card">
+                <h3>Bon usage</h3>
+                <ul class="about-list">
+                  <li>Executer les migrations SQL avant d'activer toutes les fonctions admin.</li>
+                  <li>Verifier les policies et les rate limits dans Supabase avant partage public.</li>
+                  <li>Redeployer puis faire un hard refresh apres les changements front.</li>
+                  <li>Utiliser le mode local pour tester, Supabase pour partager l'app.</li>
+                </ul>
+              </article>
+            </div>
           </section>
 
           <section id="admin-tab" class="tab-panel">
