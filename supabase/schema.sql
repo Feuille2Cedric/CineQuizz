@@ -25,7 +25,7 @@ create table if not exists public.question_moderation_requests (
   requester_nickname text not null check (char_length(trim(requester_nickname)) between 3 and 24),
   question_id text references public.questions(id) on delete set null,
   request_type text not null check (request_type in ('report', 'edit', 'new')),
-  status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
+  status text not null default 'pending' check (status in ('pending', 'approved', 'rejected', 'deleted')),
   reason text not null default '',
   proposed_prompt text,
   proposed_answer text,

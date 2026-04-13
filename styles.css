@@ -909,6 +909,11 @@ button {
   color: var(--danger);
 }
 
+.request-status-deleted {
+  background: rgba(83, 65, 40, 0.14);
+  color: #7a5322;
+}
+
 .request-status-pending {
   background: rgba(191, 75, 40, 0.16);
   color: var(--accent-dark);

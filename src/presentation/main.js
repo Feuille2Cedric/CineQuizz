@@ -1421,7 +1421,7 @@ async function main() {
           render(
             await app.reviewModerationRequest({
               requestId,
-              decision: "reject",
+              decision: "delete",
               adminNote: "Question retiree du catalogue par un administrateur."
             })
           );

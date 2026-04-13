@@ -549,10 +549,36 @@ export class SupabaseGameRepository {
       }
     }
 
+    if (decision === "delete" && request.question_id) {
+      const { data: deletedQuestion, error: deleteError } = await this.client
+        .from("questions")
+        .update({ is_active: false })
+        .eq("id", request.question_id)
+        .select("id")
+        .maybeSingle();
+
+      if (deleteError) {
+        throw new Error(`Suppression de la question impossible: ${deleteError.message}`);
+      }
+
+      if (!deletedQuestion?.id) {
+        throw new Error(
+          "Suppression de la question impossible: aucune ligne n'a ete modifiee."
+        );
+      }
+    }
+
+    const nextStatus =
+      decision === "approve"
+        ? "approved"
+        : decision === "delete"
+          ? "deleted"
+          : "rejected";
+
     const { error: updateError } = await this.client
       .from("question_moderation_requests")
       .update({
-        status: decision === "approve" ? "approved" : "rejected",
+        status: nextStatus,
         admin_note: adminNote.trim() || null,
         reviewed_by: this.userId,
         reviewed_at: new Date().toISOString(),
