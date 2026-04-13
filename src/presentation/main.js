@@ -614,11 +614,11 @@ function render(viewModel) {
   dom.statHardRatio.textContent = `${difficultyStats.hard.correct} / ${difficultyStats.hard.answered}`;
   dom.statCinephileRatio.textContent = `${difficultyStats.cinephile.correct} / ${difficultyStats.cinephile.answered}`;
 
-  dom.catalogEasy.textContent = viewModel.catalogCounts.easy;
-  dom.catalogMedium.textContent = viewModel.catalogCounts.medium;
-  dom.catalogHard.textContent = viewModel.catalogCounts.hard;
-  dom.catalogCinephile.textContent = viewModel.catalogCounts.cinephile;
-  dom.catalogTotal.textContent = viewModel.catalogCounts.total;
+  dom.catalogEasy.textContent = `${viewModel.catalogCounts.easy.remaining} / ${viewModel.catalogCounts.easy.total}`;
+  dom.catalogMedium.textContent = `${viewModel.catalogCounts.medium.remaining} / ${viewModel.catalogCounts.medium.total}`;
+  dom.catalogHard.textContent = `${viewModel.catalogCounts.hard.remaining} / ${viewModel.catalogCounts.hard.total}`;
+  dom.catalogCinephile.textContent = `${viewModel.catalogCounts.cinephile.remaining} / ${viewModel.catalogCounts.cinephile.total}`;
+  dom.catalogTotal.textContent = `${viewModel.catalogCounts.total.remaining} / ${viewModel.catalogCounts.total.total}`;
 
   for (const button of dom.difficultyButtons) {
     button.classList.toggle("is-active", button.dataset.difficulty === viewModel.difficulty);

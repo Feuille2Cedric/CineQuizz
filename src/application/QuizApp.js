@@ -216,9 +216,19 @@ export class QuizApp {
       hard: 0,
       cinephile: 0
     };
+    const remainingDifficultyCounts = {
+      easy: 0,
+      medium: 0,
+      hard: 0,
+      cinephile: 0
+    };
 
     for (const question of this.state.questions) {
       difficultyCounts[question.difficulty] += 1;
+
+      if (!this.state.answeredQuestionIds.has(question.id)) {
+        remainingDifficultyCounts[question.difficulty] += 1;
+      }
     }
 
     return {
@@ -242,8 +252,26 @@ export class QuizApp {
         remainingForDifficulty: this.#getRemainingQuestionCount(this.state.difficulty)
       },
       catalogCounts: {
-        ...difficultyCounts,
-        total: this.state.questions.length
+        easy: {
+          total: difficultyCounts.easy,
+          remaining: remainingDifficultyCounts.easy
+        },
+        medium: {
+          total: difficultyCounts.medium,
+          remaining: remainingDifficultyCounts.medium
+        },
+        hard: {
+          total: difficultyCounts.hard,
+          remaining: remainingDifficultyCounts.hard
+        },
+        cinephile: {
+          total: difficultyCounts.cinephile,
+          remaining: remainingDifficultyCounts.cinephile
+        },
+        total: {
+          total: this.state.questions.length,
+          remaining: this.#getRemainingQuestionCount()
+        }
       }
     };
   }
