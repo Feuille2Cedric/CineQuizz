@@ -1,6 +1,8 @@
 import { Question } from "../domain/entities/Question.js";
 import { isCorrectAnswer, normalizeText } from "../domain/services/answerNormalizer.js";
 
+const DIFFICULTY_LEVELS = new Set(["easy", "medium", "hard", "cinephile"]);
+
 function accuracyFromStats(stats) {
   if (!stats.totalAnswered) {
     return 0;
@@ -25,6 +27,16 @@ function toDifficultyLabel(difficulty) {
     hard: "Difficile",
     cinephile: "Cinephile"
   }[difficulty] ?? difficulty;
+}
+
+function normalizeDifficulty(difficulty) {
+  const value = String(difficulty ?? "").trim().toLowerCase();
+
+  if (!DIFFICULTY_LEVELS.has(value)) {
+    throw new Error("Difficulte invalide.");
+  }
+
+  return value;
 }
 
 function dedupeQuestions(questions) {
@@ -224,6 +236,10 @@ export class QuizApp {
     };
 
     for (const question of this.state.questions) {
+      if (!difficultyCounts[question.difficulty]) {
+        continue;
+      }
+
       difficultyCounts[question.difficulty] += 1;
 
       if (!this.state.answeredQuestionIds.has(question.id)) {
@@ -277,7 +293,7 @@ export class QuizApp {
   }
 
   setDifficulty(difficulty) {
-    this.state.difficulty = difficulty;
+    this.state.difficulty = normalizeDifficulty(difficulty);
     this.state.currentChoices = [];
     this.state.currentResult = null;
     this.pickNextQuestion();
@@ -425,7 +441,7 @@ export class QuizApp {
       proposedPrompt: effectivePrompt,
       proposedAnswer: effectiveAnswer,
       proposedAcceptedAnswers: effectiveAliases,
-      proposedDifficulty: type === "edit" ? difficulty : null,
+      proposedDifficulty: type === "edit" ? normalizeDifficulty(difficulty) : null,
       proposedMetadata:
         type === "edit"
           ? {
@@ -468,7 +484,7 @@ export class QuizApp {
       answer,
       acceptedAnswers: aliases,
       distractors,
-      difficulty,
+      difficulty: normalizeDifficulty(difficulty),
       reason
     });
 
@@ -541,7 +557,7 @@ export class QuizApp {
         prompt: prompt.trim(),
         answer: answer.trim(),
         acceptedAnswers,
-        difficulty,
+        difficulty: normalizeDifficulty(difficulty),
         metadata
       });
 

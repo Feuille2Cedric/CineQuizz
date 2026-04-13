@@ -11,6 +11,18 @@ function toStats(profile) {
   };
 }
 
+const DIFFICULTY_LEVELS = new Set(["easy", "medium", "hard", "cinephile"]);
+
+function normalizeDifficulty(difficulty) {
+  const value = String(difficulty ?? "").trim().toLowerCase();
+
+  if (!DIFFICULTY_LEVELS.has(value)) {
+    throw new Error("Difficulte invalide.");
+  }
+
+  return value;
+}
+
 function sanitizeAnswerList(answer, acceptedAnswers = []) {
   return [...new Set([answer, ...(acceptedAnswers ?? [])].map((value) => String(value ?? "").trim()).filter(Boolean))];
 }
@@ -137,12 +149,7 @@ export class SupabaseGameRepository {
       return [];
     }
 
-    const { data, error } = await this.client
-      .from("profiles")
-      .select("user_id,nickname,total_correct,total_answered")
-      .order("total_correct", { ascending: false })
-      .order("total_answered", { ascending: true })
-      .limit(50);
+    const { data, error } = await this.client.rpc("get_leaderboard_profiles");
 
     if (error) {
       throw new Error(`Chargement du classement impossible: ${error.message}`);
@@ -247,7 +254,7 @@ export class SupabaseGameRepository {
       payload.proposed_prompt = proposedPrompt.trim();
       payload.proposed_answer = proposedAnswer.trim();
       payload.proposed_accepted_answers = sanitizeAnswerList(proposedAnswer, proposedAcceptedAnswers);
-      payload.proposed_difficulty = proposedDifficulty;
+      payload.proposed_difficulty = normalizeDifficulty(proposedDifficulty);
       payload.proposed_metadata = proposedMetadata ?? {};
     }
 
@@ -283,7 +290,7 @@ export class SupabaseGameRepository {
           proposedAnswer,
           proposedAcceptedAnswers
         );
-        fallbackPayload.proposed_difficulty = proposedDifficulty;
+        fallbackPayload.proposed_difficulty = normalizeDifficulty(proposedDifficulty);
       }
 
       const fallback = await this.client.from("question_moderation_requests").insert(fallbackPayload);
@@ -329,7 +336,7 @@ export class SupabaseGameRepository {
       proposed_prompt: prompt.trim(),
       proposed_answer: answer.trim(),
       proposed_accepted_answers: sanitizeAnswerList(answer, acceptedAnswers),
-      proposed_difficulty: difficulty,
+      proposed_difficulty: normalizeDifficulty(difficulty),
       proposed_metadata: proposedMetadata,
       question_snapshot: {}
     };
@@ -351,7 +358,7 @@ export class SupabaseGameRepository {
         proposed_prompt: prompt.trim(),
         proposed_answer: answer.trim(),
         proposed_accepted_answers: sanitizeAnswerList(answer, acceptedAnswers),
-        proposed_difficulty: difficulty,
+        proposed_difficulty: normalizeDifficulty(difficulty),
         question_snapshot: {}
       });
 
@@ -404,7 +411,7 @@ export class SupabaseGameRepository {
         prompt: prompt.trim(),
         answer: answer.trim(),
         accepted_answers: sanitizeAnswerList(answer, acceptedAnswers),
-        difficulty,
+        difficulty: normalizeDifficulty(difficulty),
         metadata: normalizedMetadata
       })
       .eq("id", questionId)
