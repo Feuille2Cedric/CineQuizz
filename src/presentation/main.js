@@ -124,6 +124,7 @@ const uiState = {
   editPanelOpen: false,
   editQuestionId: null,
   contributionQuestionId: null,
+  answerQuestionId: null,
   entryDismissed: false,
   viewModel: null,
   authMode: "sign-in",
@@ -546,6 +547,12 @@ function render(viewModel) {
   const activeQuestionId = viewModel.currentQuestion?.id ?? null;
   const canEditQuestion = Boolean(activeQuestionId) && viewModel.profile.isAdmin;
   const canAdministerQuestion = Boolean(activeQuestionId) && viewModel.profile.isAdmin;
+
+  if (uiState.answerQuestionId !== activeQuestionId) {
+    uiState.answerQuestionId = activeQuestionId;
+    dom.answerInput.value = "";
+    dom.answerForm.dataset.selectedChoice = "";
+  }
 
   if (uiState.editQuestionId !== activeQuestionId) {
     uiState.editPanelOpen = false;
