@@ -278,6 +278,10 @@ Ces points ne sont pas controles par le repo et doivent etre verifies dans le da
 - [`restrict_profiles_access.sql`](/c:/Users/crima/.vscode/CineQuizz/supabase/restrict_profiles_access.sql)
   - restreint la lecture directe de `profiles`
   - ajoute la fonction `get_leaderboard_profiles()`
+- [`harden_security_barriers.sql`](/c:/Users/crima/.vscode/CineQuizz/supabase/harden_security_barriers.sql)
+  - renforce les contraintes SQL sur les questions, la moderation et la progression
+  - durcit les policies RLS et les privileges SQL
+  - empeche un utilisateur authentifie de modifier directement `is_admin` ou ses statistiques dans `profiles`
 - [`add_deleted_moderation_status.sql`](/c:/Users/crima/.vscode/CineQuizz/supabase/add_deleted_moderation_status.sql)
   - ajoute le statut `deleted` pour la moderation
 - [`add_cinephile_difficulty.sql`](/c:/Users/crima/.vscode/CineQuizz/supabase/add_cinephile_difficulty.sql)
