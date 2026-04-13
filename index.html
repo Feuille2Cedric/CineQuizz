@@ -3,6 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests"
+    />
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+    <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=()" />
     <title>CineQuizz</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <link rel="stylesheet" href="./styles.css" />
@@ -199,6 +205,7 @@
                     id="answer-input"
                     name="answer"
                     rows="3"
+                    maxlength="240"
                     placeholder="Tapez votre reponse ici"
                   ></textarea>
                 </div>
@@ -254,6 +261,7 @@
                       id="edit-aliases"
                       name="aliases"
                       type="text"
+                      maxlength="1000"
                       placeholder="Separer par des virgules"
                     />
                   </div>
@@ -264,6 +272,7 @@
                       id="edit-distractors"
                       name="distractors"
                       rows="4"
+                      maxlength="1800"
                       placeholder="Une fausse reponse par ligne"
                     ></textarea>
                   </div>
@@ -320,6 +329,7 @@
                     id="question-feedback-reason"
                     name="reason"
                     rows="4"
+                    maxlength="1000"
                     placeholder="Expliquez le probleme ou la modification a faire"
                   ></textarea>
 
@@ -342,6 +352,7 @@
                         id="feedback-aliases"
                         name="aliases"
                         type="text"
+                        maxlength="1000"
                         placeholder="Separer par des virgules"
                       />
                     </div>
@@ -352,6 +363,7 @@
                         id="feedback-distractors"
                         name="distractors"
                         rows="4"
+                        maxlength="1800"
                         placeholder="Une fausse reponse par ligne"
                       ></textarea>
                     </div>
@@ -400,6 +412,7 @@
                       id="new-question-aliases"
                       name="aliases"
                       type="text"
+                      maxlength="1000"
                       placeholder="Separer par des virgules"
                     />
                   </div>
@@ -410,6 +423,7 @@
                       id="new-question-distractors"
                       name="distractors"
                       rows="4"
+                      maxlength="1800"
                       placeholder="Une fausse reponse par ligne"
                     ></textarea>
                   </div>
@@ -427,6 +441,7 @@
                     id="new-question-reason"
                     name="reason"
                     rows="4"
+                    maxlength="1000"
                     placeholder="Contexte, precision ou justification"
                   ></textarea>
 

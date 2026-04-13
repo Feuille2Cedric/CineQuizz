@@ -2,6 +2,15 @@ import { Question } from "../domain/entities/Question.js";
 import { isCorrectAnswer, normalizeText } from "../domain/services/answerNormalizer.js";
 
 const DIFFICULTY_LEVELS = new Set(["easy", "medium", "hard", "cinephile"]);
+const INPUT_LIMITS = {
+  prompt: 400,
+  answer: 240,
+  reason: 1000,
+  aliases: 20,
+  aliasLength: 120,
+  distractors: 10,
+  distractorLength: 180
+};
 
 function accuracyFromStats(stats) {
   if (!stats.totalAnswered) {
@@ -37,6 +46,34 @@ function normalizeDifficulty(difficulty) {
   }
 
   return value;
+}
+
+function ensureTextLimit(value, maxLength, label) {
+  const normalized = String(value ?? "").trim();
+
+  if (normalized.length > maxLength) {
+    throw new Error(`${label} est trop long.`);
+  }
+
+  return normalized;
+}
+
+function ensureChoiceList(values, maxItems, maxLength, label) {
+  const normalized = (values ?? [])
+    .map((value) => String(value ?? "").trim())
+    .filter(Boolean);
+
+  if (normalized.length > maxItems) {
+    throw new Error(`${label} contient trop d'elements.`);
+  }
+
+  for (const entry of normalized) {
+    if (entry.length > maxLength) {
+      throw new Error(`Un element de ${label.toLowerCase()} est trop long.`);
+    }
+  }
+
+  return normalized;
 }
 
 function dedupeQuestions(questions) {
@@ -236,7 +273,7 @@ export class QuizApp {
     };
 
     for (const question of this.state.questions) {
-      if (!difficultyCounts[question.difficulty]) {
+      if (!Object.hasOwn(difficultyCounts, question.difficulty)) {
         continue;
       }
 
@@ -400,6 +437,8 @@ export class QuizApp {
       throw new Error("Merci d'expliquer votre demande.");
     }
 
+    const normalizedReason = ensureTextLimit(reason, INPUT_LIMITS.reason, "L'explication");
+
     const effectiveQuestionType =
       type === "edit"
         ? questionType === "mcq"
@@ -408,20 +447,30 @@ export class QuizApp {
         : shouldUseMultipleChoice(currentQuestion)
           ? "mcq"
           : "text";
-    const trimmedPrompt = prompt.trim();
-    const trimmedAnswer = answer.trim();
+    const trimmedPrompt = ensureTextLimit(prompt, INPUT_LIMITS.prompt, "La question");
+    const trimmedAnswer = ensureTextLimit(answer, INPUT_LIMITS.answer, "La reponse");
     const effectivePrompt = type === "edit" ? trimmedPrompt || currentQuestion.prompt : null;
     const effectiveAnswer = type === "edit" ? trimmedAnswer || currentQuestion.answer : null;
     const effectiveAliases =
       type === "edit" && effectiveQuestionType !== "mcq"
         ? trimmedAnswer
-          ? aliases
+          ? ensureChoiceList(
+              aliases,
+              INPUT_LIMITS.aliases,
+              INPUT_LIMITS.aliasLength,
+              "Les reponses acceptees supplementaires"
+            )
           : currentQuestion.acceptedAnswers.slice(1)
         : [];
     const effectiveDistractors =
       type === "edit" && effectiveQuestionType === "mcq"
         ? (distractors ?? []).length
-          ? distractors
+          ? ensureChoiceList(
+              distractors,
+              INPUT_LIMITS.distractors,
+              INPUT_LIMITS.distractorLength,
+              "Les fausses reponses"
+            )
           : currentQuestion.metadata?.distractors ?? []
         : [];
 
@@ -436,7 +485,7 @@ export class QuizApp {
     await this.gameRepository.submitQuestionFeedback({
       type,
       questionId,
-      reason,
+      reason: normalizedReason,
       questionSnapshot: currentQuestion.toJSON(),
       proposedPrompt: effectivePrompt,
       proposedAnswer: effectiveAnswer,
@@ -474,18 +523,34 @@ export class QuizApp {
       throw new Error("Une nouvelle question doit contenir une question et une reponse.");
     }
 
-    if (questionType === "mcq" && (distractors ?? []).length < 2) {
+    const normalizedPrompt = ensureTextLimit(prompt, INPUT_LIMITS.prompt, "La question");
+    const normalizedAnswer = ensureTextLimit(answer, INPUT_LIMITS.answer, "La reponse");
+    const normalizedReason = ensureTextLimit(reason, INPUT_LIMITS.reason, "L'explication");
+    const normalizedAliases = ensureChoiceList(
+      aliases,
+      INPUT_LIMITS.aliases,
+      INPUT_LIMITS.aliasLength,
+      "Les reponses acceptees supplementaires"
+    );
+    const normalizedDistractors = ensureChoiceList(
+      distractors,
+      INPUT_LIMITS.distractors,
+      INPUT_LIMITS.distractorLength,
+      "Les fausses reponses"
+    );
+
+    if (questionType === "mcq" && normalizedDistractors.length < 2) {
       throw new Error("Un QCM doit contenir au moins 2 fausses reponses.");
     }
 
     await this.gameRepository.submitNewQuestionSuggestion({
-      prompt,
+      prompt: normalizedPrompt,
       questionType,
-      answer,
-      acceptedAnswers: aliases,
-      distractors,
+      answer: normalizedAnswer,
+      acceptedAnswers: normalizedAliases,
+      distractors: normalizedDistractors,
       difficulty: normalizeDifficulty(difficulty),
-      reason
+      reason: normalizedReason
     });
 
     await this.#refreshModerationRequests();
@@ -542,20 +607,34 @@ export class QuizApp {
     }
 
     const effectiveQuestionType = questionType === "mcq" ? "mcq" : "text";
-    const acceptedAnswers = [answer, ...aliases]
+    const normalizedPrompt = ensureTextLimit(prompt, INPUT_LIMITS.prompt, "La question");
+    const normalizedAnswer = ensureTextLimit(answer, INPUT_LIMITS.answer, "La reponse");
+    const normalizedAliases = ensureChoiceList(
+      aliases,
+      INPUT_LIMITS.aliases,
+      INPUT_LIMITS.aliasLength,
+      "Les reponses acceptees supplementaires"
+    );
+    const normalizedDistractors = ensureChoiceList(
+      distractors,
+      INPUT_LIMITS.distractors,
+      INPUT_LIMITS.distractorLength,
+      "Les fausses reponses"
+    );
+    const acceptedAnswers = [normalizedAnswer, ...normalizedAliases]
       .map((value) => String(value ?? "").trim())
       .filter(Boolean);
     const metadata = buildQuestionMetadata(
       currentQuestion.metadata,
       effectiveQuestionType,
-      distractors
+      normalizedDistractors
     );
 
     if (this.state.profile.isAdmin && typeof this.gameRepository.updateQuestion === "function") {
       await this.gameRepository.updateQuestion({
         questionId,
-        prompt: prompt.trim(),
-        answer: answer.trim(),
+        prompt: normalizedPrompt,
+        answer: normalizedAnswer,
         acceptedAnswers,
         difficulty: normalizeDifficulty(difficulty),
         metadata
@@ -569,8 +648,8 @@ export class QuizApp {
     }
 
     this.patchRepository.saveOverride(questionId, {
-      prompt: prompt.trim(),
-      answer: answer.trim(),
+      prompt: normalizedPrompt,
+      answer: normalizedAnswer,
       acceptedAnswers,
       difficulty,
       metadata

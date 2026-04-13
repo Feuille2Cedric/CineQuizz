@@ -177,3 +177,115 @@ Important: la cle `anon` Supabase n'est pas secrete cote navigateur. Cette appro
 - [`scripts/build_question_bank.py`](/c:/Users/crima/.vscode/CineQuizz/scripts/build_question_bank.py)
 - [`data/question-bank.json`](/c:/Users/crima/.vscode/CineQuizz/data/question-bank.json)
 - [`supabase/questions.seed.sql`](/c:/Users/crima/.vscode/CineQuizz/supabase/questions.seed.sql)
+
+## Securite
+
+Cette section resume les protections actuellement ajoutees dans le projet.
+
+### Authentification et mots de passe
+
+- L'application ne stocke jamais les mots de passe dans les tables `public`.
+- La connexion et l'inscription passent par Supabase Auth depuis [`SupabaseGameRepository.js`](/c:/Users/crima/.vscode/CineQuizz/src/infrastructure/supabase/SupabaseGameRepository.js).
+- Les mots de passe sont donc geres par Supabase, pas par du code maison dans le front.
+- La cle utilisee dans le navigateur est une cle publishable, pas une `service_role`.
+
+### Configuration des cles
+
+- Les informations Supabase ne sont plus committees en dur dans le depot.
+- Le workflow [`deploy.yml`](/c:/Users/crima/.vscode/CineQuizz/.github/workflows/deploy.yml) genere `config.js` au build a partir des secrets GitHub Actions.
+- Cela evite de versionner l'URL et la cle publishable dans le repo.
+- Important: la cle publishable reste visible dans le JavaScript servi au navigateur, ce qui est normal. Elle ne donne pas les droits d'une `service_role`.
+
+### Row Level Security
+
+- Les tables sensibles utilisent RLS dans [`schema.sql`](/c:/Users/crima/.vscode/CineQuizz/supabase/schema.sql).
+- `questions`:
+  - lecture publique uniquement sur les questions actives
+  - insertion et modification reservees aux admins
+- `user_question_progress`:
+  - chaque utilisateur ne lit et n'ecrit que sa propre progression
+- `question_moderation_requests`:
+  - un utilisateur normal ne lit que ses propres demandes
+  - un admin peut lire et traiter l'ensemble de la file
+- `profiles`:
+  - la lecture a ete restreinte a son propre profil
+  - le classement ne lit plus directement la table
+
+### Classement public minimal
+
+- Pour ne pas exposer toute la table `profiles`, le classement passe par la fonction SQL `get_leaderboard_profiles()`.
+- Cette fonction ne renvoie que les champs utiles au leaderboard:
+  - `user_id`
+  - `nickname`
+  - `total_correct`
+  - `total_answered`
+- La migration correspondante est [`restrict_profiles_access.sql`](/c:/Users/crima/.vscode/CineQuizz/supabase/restrict_profiles_access.sql).
+
+### Separation des droits admin
+
+- Les actions d'administration reposent sur `profiles.is_admin`.
+- La verification des droits se fait a la fois:
+  - dans le front pour masquer les boutons admin
+  - dans le backend Supabase via RLS et la fonction `public.is_admin()`
+- Meme si quelqu'un force l'interface dans le navigateur, la base doit encore accepter l'action.
+
+### Validation et reduction de surface d'entree
+
+- Les difficultes autorisees sont explicitement limitees a:
+  - `easy`
+  - `medium`
+  - `hard`
+  - `cinephile`
+- Les formulaires de creation/modification valident les champs avant envoi.
+- Des limites de taille ont ete ajoutees cote interface et cote application pour:
+  - question
+  - reponse
+  - explication
+  - aliases
+  - distracteurs QCM
+- Cela ne remplace pas la securite SQL, mais reduit les entrees anormales et les abus simples.
+
+### Injection SQL
+
+- Le code applicatif ne construit pas de requetes SQL dynamiques a partir de chaines utilisateur.
+- Les acces a la base passent par:
+  - les methodes du client Supabase (`insert`, `update`, `select`, `eq`)
+  - ou des fonctions SQL/RPC avec parametres
+- Le risque d'injection SQL classique est donc fortement reduit par conception.
+- Les contraintes SQL et les policies RLS restent la vraie barriere de securite.
+
+### Durcissement navigateur
+
+- Une Content Security Policy a ete ajoutee dans [`index.html`](/c:/Users/crima/.vscode/CineQuizz/index.html).
+- Une `Referrer-Policy` stricte est definie.
+- Une `Permissions-Policy` desactive des APIs non necessaires comme:
+  - camera
+  - microphone
+  - geolocalisation
+- L'objectif est de limiter les chargements externes et certaines surfaces d'abus navigateur.
+
+### Protections operationnelles a verifier dans Supabase
+
+Ces points ne sont pas controles par le repo et doivent etre verifies dans le dashboard Supabase:
+
+- activer la confirmation d'e-mail
+- verifier les `Rate Limits` d'authentification
+- renforcer la politique de mot de passe
+- activer, si besoin, les protections supplementaires d'Auth proposees par Supabase
+
+### Migrations de securite ajoutees
+
+- [`restrict_profiles_access.sql`](/c:/Users/crima/.vscode/CineQuizz/supabase/restrict_profiles_access.sql)
+  - restreint la lecture directe de `profiles`
+  - ajoute la fonction `get_leaderboard_profiles()`
+- [`add_deleted_moderation_status.sql`](/c:/Users/crima/.vscode/CineQuizz/supabase/add_deleted_moderation_status.sql)
+  - ajoute le statut `deleted` pour la moderation
+- [`add_cinephile_difficulty.sql`](/c:/Users/crima/.vscode/CineQuizz/supabase/add_cinephile_difficulty.sql)
+  - etend les contraintes SQL pour accepter `cinephile`
+
+### Limites actuelles
+
+- Le front reste une application statique: il ne remplace pas un backend prive.
+- La cle publishable est publique par nature.
+- La securite finale depend encore de la configuration Supabase reelle du projet.
+- Avant une ouverture publique large, il faut verifier le dashboard Supabase en plus du code du repo.
