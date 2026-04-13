@@ -370,13 +370,21 @@ export class SupabaseGameRepository {
   async deleteQuestion(questionId) {
     this.#assertAdmin();
 
-    const { error } = await this.client
+    const { data, error } = await this.client
       .from("questions")
       .update({ is_active: false })
-      .eq("id", questionId);
+      .eq("id", questionId)
+      .select("id")
+      .maybeSingle();
 
     if (error) {
       throw new Error(`Suppression impossible: ${error.message}`);
+    }
+
+    if (!data?.id) {
+      throw new Error(
+        "Suppression impossible: aucune ligne n'a ete modifiee. Verifiez les droits admin et l'existence de la question."
+      );
     }
   }
 

@@ -1415,8 +1415,21 @@ async function main() {
           return;
         }
 
-        render(await app.deleteQuestion(questionId));
-        dom.dataMessage.textContent = "Question retiree du catalogue actif.";
+        await app.deleteQuestion(questionId);
+
+        if (requestId) {
+          render(
+            await app.reviewModerationRequest({
+              requestId,
+              decision: "reject",
+              adminNote: "Question retiree du catalogue par un administrateur."
+            })
+          );
+        } else {
+          render(await app.refreshModerationRequests());
+        }
+
+        dom.dataMessage.textContent = "Question retiree du catalogue actif et demande admin cloturee.";
         return;
       }
 
